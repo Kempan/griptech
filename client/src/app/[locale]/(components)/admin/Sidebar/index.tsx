@@ -82,23 +82,23 @@ const Sidebar = () => {
 		<aside className={sidebarClassNames}>
 			<div
 				className={`flex justify-between lg:justify-normal items-center pt-6 ${
-					isSidebarCollapsed ? "px-5" : "px-8"
+					isSidebarCollapsed ? "px-5" : "px-4"
 				}`}
 			>
 				<Link href="/admin">
 					{isSidebarCollapsed ? (
 						<Image
-							src="/images/griptech-logo.webp"
+							src="/images/griptech-logo-transparent.png"		
 							alt="logotype-small"
-							width={40}
-							height={40}
+							width={150}
+							height={60}
 							className="rounded"
 						/>
 					) : (
 						<Image
-							src="/images/griptech-logo.webp"
+							src="/images/griptech-logo-transparent.png"
 							alt="logotype"
-							width={80}
+							width={150}
 							height={60}
 							className="rounded"
 						/>
@@ -113,7 +113,7 @@ const Sidebar = () => {
 			</div>
 
 			{/* LINKS */}
-			<div className="grow mt-8">
+			<div className="grow mt-3">
 				<SidebarLink
 					href="/admin"
 					icon={Layout}

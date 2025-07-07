@@ -14,9 +14,9 @@ const Header = () => {
 			<div className="flex flex-1 justify-between items-center gap-5">
 				<Link href="/">
 					<Image
-						src="/images/griptech-logo.webp"
+						src="/images/griptech-logo-transparent.png"	
 						alt="logotype"
-						width={100}
+						width={200}
 						height={32}
 						priority
 					/>
