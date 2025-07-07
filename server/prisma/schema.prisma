@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  roles    String[] @default(["customer"])
+  password String?
+  phone    String?
+
+  // Default shipping address
+  shippingAddress Json? @map("shipping_address")
+
+  // Default billing address 
+  billingAddress Json? @map("billing_address")
+
+  // Last login timestamp
+  lastLogin DateTime? @map("last_login")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  orders Order[]
+  favorites Favorite[]
+  productBundles ProductBundle[]
+
+  @@map("users")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Ensure a user can only favorite a product once
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model ProductBundle {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String?
+  items       Json     @default("[]") // Array of {productId, quantity, order}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Product {
+  id            Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  slug          String   @unique
+  name          String
+  price         Decimal? @db.Decimal(10, 2)
+  rating        Float?
+  stockQuantity Int?     @map("stock_quantity")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Essential SEO metadata
+  description      String? @db.Text
+  shortDescription String? @map("short_description") @db.Text
+  metaTitle        String? @map("meta_title")
+  metaDescription  String? @map("meta_description") @db.Text
+  metaKeywords     String? @map("meta_keywords")
+
+  // ✅ Many-to-Many relation with Categories using a Join Table
+  productCategories ProductCategoryRelation[]
+
+  Sales     Sale[]
+  Purchases Purchase[]
+  OrderItem OrderItem[]
+  favorites Favorite[]
+}
+
+model ProductCategory {
+  id          Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Add SEO fields for categories
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description") @db.Text
+  metaKeywords    String? @map("meta_keywords")
+
+  // ✅ Hierarchical Parent-Child Relationship
+  parentId Int?              @map("parent_id")
+  parent   ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children ProductCategory[] @relation("CategoryHierarchy")
+
+  // ✅ Many-to-Many relation with Products using a Join Table
+  productCategories ProductCategoryRelation[]
+}
+
+// ✅ Correct Many-to-Many Join Table
+model ProductCategoryRelation {
+  productId  Int
+  categoryId Int
+
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId]) // Composite Primary Key
+}
+
+// Order-related models
+model Order {
+  id          Int         @id @default(autoincrement())
+  orderNumber String      @unique // Human-readable order identifier
+  userId      Int? // Can be null for guest checkouts
+  status      OrderStatus @default(PENDING)
+
+  // Payment details
+  total         Decimal  @db.Decimal(10, 2)
+  subtotal      Decimal  @db.Decimal(10, 2)
+  tax           Decimal  @db.Decimal(10, 2)
+  shipping      Decimal  @db.Decimal(10, 2)
+  discount      Decimal? @db.Decimal(10, 2)
+  currency      String   @default("SEK")
+  paymentMethod String?
+  paymentId     String? // External payment provider reference
+
+  // Customer information
+  customerEmail String
+  customerName  String
+  customerPhone String?
+
+  // Shipping details
+  shippingAddress Json
+  billingAddress  Json? // Can be null if same as shipping
+
+  // Notes
+  customerNote String? @db.Text
+  adminNote    String? @db.Text
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  paidAt    DateTime? @map("paid_at")
+  shippedAt DateTime? @map("shipped_at")
+
+  // Relations
+  user       User?       @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2) // Price at time of purchase
+  name      String // Product name at time of purchase
+  sku       String? // Product SKU at time of purchase
+  options   Json? // Store selected options like size, color, etc.
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Enums for order-related fields
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  FAILED
+}
+
+model Sale {
+  id          Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  productId   Int      @map("product_id")
+  timestamp   DateTime @default(now()) @map("timestamp")
+  quantity    Int
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
+  totalAmount Decimal  @map("total_amount") @db.Decimal(10, 2)
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id        Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  productId Int      @map("product_id")
+  timestamp DateTime @default(now()) @map("timestamp")
+  quantity  Int
+  unitCost  Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  totalCost Decimal  @map("total_cost") @db.Decimal(10, 2)
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  category  String
+  amount    Decimal  @db.Decimal(10, 2)
+  timestamp DateTime @default(now()) @map("timestamp")
+}
+
+model SalesSummary {
+  id               Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  totalValue       Decimal  @map("total_value") @db.Decimal(10, 2)
+  changePercentage Float?   @map("change_percentage")
+  date             DateTime @default(now()) @map("date")
+}
+
+model PurchaseSummary {
+  id               Int      @id @default(autoincrement()) // ✅ Auto-incremented ID
+  totalPurchased   Decimal  @map("total_purchased") @db.Decimal(10, 2)
+  changePercentage Float?   @map("change_percentage")
+  date             DateTime @default(now()) @map("date")
+}
+
+model ExpenseSummary {
+  id                 Int                 @id @default(autoincrement()) // ✅ Auto-incremented ID
+  totalExpenses      Decimal             @map("total_expenses") @db.Decimal(10, 2)
+  date               DateTime            @default(now()) @map("date")
+  expensesByCategory ExpenseByCategory[]
+}
+
+model ExpenseByCategory {
+  id               Int            @id @default(autoincrement()) // ✅ Auto-incremented ID
+  expenseSummaryId Int            @map("expense_summary_id")
+  category         String
+  amount           Decimal        @db.Decimal(10, 2)
+  date             DateTime       @default(now()) @map("date")
+  expenseSummary   ExpenseSummary @relation(fields: [expenseSummaryId], references: [id])
+}

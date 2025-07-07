@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Canvas",
+    "slug": "canvas",
+    "parentId": null
+  },
+  {
+    "name": "Posters",
+    "slug": "posters",
+    "parentId": null
+  },
+  {
+    "name": "Animals",
+    "slug": "canvas-animals",
+    "parentId": "canvas"
+  },
+  {
+    "name": "Space",
+    "slug": "canvas-space",
+    "parentId": "canvas"
+  },
+  {
+    "name": "Planets",
+    "slug": "canvas-space-planets",
+    "parentId": "canvas-space"
+  },
+  {
+    "name": "Animals",
+    "slug": "posters-animals",
+    "parentId": "posters"
+  },
+  {
+    "name": "Space",
+    "slug": "posters-space",
+    "parentId": "posters"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Pinkscale Blazing Star",
+    "slug": "pinkscale-blazing-star",
+    "price": 500,
+    "rating": 2.25,
+    "stockQuantity": 124834,
+    "categoryIds": ["canvas", "canvas-animals"]
+  },
+  {
+    "name": "Gila Milkvetch",
+    "slug": "gila-milkvetch",
+    "price": 899.05,
+    "rating": 3.56,
+    "stockQuantity": 799402,
+    "categoryIds": ["canvas"]
+  },
+  {
+    "name": "Rocky Mountain Zinnia",
+    "slug": "rocky-mountain-zinnia",
+    "price": 264.37,
+    "rating": 3.23,
+    "stockQuantity": 842192,
+    "categoryIds": ["posters", "posters-space"]
+  },
+  {
+    "name": "Guadalupe Suncup",
+    "slug": "guadalupe-suncup",
+    "price": 555.93,
+    "rating": 4.09,
+    "stockQuantity": 236333,
+    "categoryIds": ["posters"]
+  },
+  {
+    "name": "Saline Phlox",
+    "slug": "saline-phlox",
+    "price": 82.62,
+    "rating": 4.8,
+    "stockQuantity": 601208,
+    "categoryIds": []
+  },
+  {
+    "name": "Common Brighteyes",
+    "slug": "common-brighteyes",
+    "price": 435.44,
+    "rating": 0.27,
+    "stockQuantity": 124068,
+    "categoryIds": []
+  }
+]
