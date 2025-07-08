@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "wibo",
+      name: "griptech",
       script: "npm",
       args: "run dev",
       env: {
