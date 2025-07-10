@@ -35,7 +35,18 @@ app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use((0, morgan_1.default)("common"));
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
-app.use((0, cors_1.default)({ credentials: true, origin: process.env.CLIENT_URL }));
+const allowedOrigins = [
+    "https://main.d3rzdlhtikzd4k.amplifyapp.com",
+    "http://localhost:3000",
+    "https://localhost:3000",
+];
+app.use((0, cors_1.default)({
+    credentials: true,
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
+}));
 app.use((0, cookie_parser_1.default)());
 /* ADMIN ROUTES */
 app.use("/admin/dashboard", dashboardRoutes_1.default);

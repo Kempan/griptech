@@ -33,7 +33,21 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
+const allowedOrigins = [
+	"https://main.d3rzdlhtikzd4k.amplifyapp.com",
+	"http://localhost:3000",
+	"https://localhost:3000",
+];
+
+app.use(
+	cors({
+		credentials: true,
+		origin: allowedOrigins,
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+		exposedHeaders: ["Set-Cookie"],
+	})
+);
 app.use(cookieParser());
 
 /* ADMIN ROUTES */
