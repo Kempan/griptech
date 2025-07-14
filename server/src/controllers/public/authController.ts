@@ -1,8 +1,34 @@
+// server/src/controllers/public/authController.ts
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { encrypt, decrypt } from "../../lib/session";
 import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
+
+// Helper function to get cookie settings based on environment
+const getCookieSettings = () => {
+	const isProduction = process.env.NODE_ENV === "production";
+
+	if (isProduction) {
+		// Production settings (for API Gateway/AWS)
+		return {
+			httpOnly: true,
+			secure: true,
+			sameSite: "none" as const,
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+			path: "/",
+		};
+	} else {
+		// Development settings (for localhost)
+		return {
+			httpOnly: true,
+			secure: false,
+			sameSite: "lax" as const,
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+			path: "/",
+		};
+	}
+};
 
 /**
  * Handle user login
@@ -51,13 +77,9 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		});
 
-		// Set HTTP-only session cookie
-		res.cookie("session", session, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-		});
+		// Environment-aware cookie settings
+		const cookieSettings = getCookieSettings();
+		res.cookie("session", session, cookieSettings);
 
 		// Send successful response with user info (excluding password)
 		res.status(200).json({
@@ -98,8 +120,13 @@ export const getSession = async (
 		}
 
 		// Check if session is expired
-		if (session.expiresAt && typeof session.expiresAt === 'string' && new Date(session.expiresAt) < new Date()) {
-			res.clearCookie("session");
+		if (
+			session.expiresAt &&
+			typeof session.expiresAt === "string" &&
+			new Date(session.expiresAt) < new Date()
+		) {
+			const cookieSettings = getCookieSettings();
+			res.clearCookie("session", cookieSettings);
 			res.status(200).json({ isLoggedIn: false });
 			return;
 		}
@@ -117,7 +144,8 @@ export const getSession = async (
 
 		if (!user) {
 			// User no longer exists in database
-			res.clearCookie("session");
+			const cookieSettings = getCookieSettings();
+			res.clearCookie("session", cookieSettings);
 			res.status(200).json({ isLoggedIn: false });
 			return;
 		}
@@ -144,11 +172,8 @@ export const logoutUser = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		res.clearCookie("session", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-		});
+		const cookieSettings = getCookieSettings();
+		res.clearCookie("session", cookieSettings);
 		res.status(200).json({ message: "Logged out successfully" });
 	} catch (error) {
 		console.error("Logout failed:", error);
