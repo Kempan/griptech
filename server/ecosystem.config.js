@@ -3,7 +3,7 @@ module.exports = {
 	apps: [
 		{
 			name: "griptech-prod",
-			script: "dist/server/src/index.js",
+			script: "dist/src/index.js",
 			// instances: 2,
 			// exec_mode: "cluster",
 			env: {
