@@ -3,9 +3,9 @@ module.exports = {
 	apps: [
 		{
 			name: "griptech-prod",
-			script: "server/dist/server/src/index.js", // Since package.json is in server/
-			instances: 2,
-			exec_mode: "cluster",
+			script: "dist/server/src/index.js",
+			// instances: 2,
+			// exec_mode: "cluster",
 			env: {
 				NODE_ENV: "production",
 				PORT: 80,
