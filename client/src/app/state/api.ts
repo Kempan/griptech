@@ -238,7 +238,15 @@ export const api = createApi({
 		}),
 
 		loginUser: build.mutation<
-			{ message: string },
+			{
+				message: string;
+				user: {
+					id: number;
+					name: string;
+					email: string;
+					roles: string[];
+				};
+			},
 			{ email: string; password: string }
 		>({
 			query: (credentials) => ({
@@ -258,7 +266,6 @@ export const api = createApi({
 			}),
 			invalidatesTags: ["Auth"],
 		}),
-
 	}),
 });
 
@@ -298,5 +305,4 @@ export const {
 	useGetAuthStatusQuery,
 	useLoginUserMutation,
 	useLogoutUserMutation,
-
 } = api;

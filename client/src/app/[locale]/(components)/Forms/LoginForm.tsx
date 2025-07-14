@@ -11,6 +11,7 @@ import { Input } from "@/shadcn/components/ui/input";
 import { Label } from "@/shadcn/components/ui/label";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { useRouter } from "next/navigation"; // Add this import
 
 // 🔹 Define Zod schema for validation
 const loginSchema = z.object({
@@ -23,6 +24,7 @@ export default function LoginForm({
 	...props
 }: React.ComponentProps<"div">) {
 	const t = useTranslations();
+	const router = useRouter(); // Add this hook
 	const [login, { isLoading }] = useLoginUserMutation();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -51,9 +53,16 @@ export default function LoginForm({
 		setFormErrors({}); // Clear previous errors if validation passes
 
 		try {
-			await login({ email, password }).unwrap();
-			window.location.reload(); // ✅ Refresh to update authentication state
+			const response = await login({ email, password }).unwrap();
+
+			// Check if user has admin role and redirect accordingly
+			if (response.user && response.user.roles.includes("admin")) {
+				router.push("/admin"); // Redirect to admin panel
+			} else {
+				router.push("/"); // Redirect to home page
+			}
 		} catch (err) {
+			console.error("Login error:", err);
 			if (
 				typeof err === "object" &&
 				err !== null &&
@@ -127,24 +136,6 @@ export default function LoginForm({
 							{loginError && (
 								<p className="text-red-500 text-sm text-center">{loginError}</p>
 							)}
-
-							{/* <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-								<span className="relative z-10 bg-background px-2 text-muted-foreground">
-									{t("OrContinueWith")}
-								</span>
-							</div>
-
-							<div className="grid grid-cols-3 gap-4">
-								<Button variant="outline" className="w-full">
-									Apple
-								</Button>
-								<Button variant="outline" className="w-full">
-									Google
-								</Button>
-								<Button variant="outline" className="w-full">
-									Meta
-								</Button>
-							</div> */}
 
 							<div className="text-center text-sm">
 								{t("DontHaveAccount")}{" "}
