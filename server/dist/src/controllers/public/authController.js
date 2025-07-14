@@ -17,6 +17,30 @@ const client_1 = require("@prisma/client");
 const session_1 = require("../../lib/session");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma = new client_1.PrismaClient();
+// Helper function to get cookie settings based on environment
+const getCookieSettings = () => {
+    const isProduction = process.env.NODE_ENV === "production";
+    if (isProduction) {
+        // Production settings (for API Gateway/AWS)
+        return {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        };
+    }
+    else {
+        // Development settings (for localhost)
+        return {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        };
+    }
+};
 /**
  * Handle user login
  * Validates credentials and creates a session
@@ -56,13 +80,9 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             roles: user.roles || [],
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
-        // Set HTTP-only session cookie
-        res.cookie("session", session, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+        // Environment-aware cookie settings
+        const cookieSettings = getCookieSettings();
+        res.cookie("session", session, cookieSettings);
         // Send successful response with user info (excluding password)
         res.status(200).json({
             message: "Login successful",
@@ -96,8 +116,11 @@ const getSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return;
         }
         // Check if session is expired
-        if (session.expiresAt && typeof session.expiresAt === 'string' && new Date(session.expiresAt) < new Date()) {
-            res.clearCookie("session");
+        if (session.expiresAt &&
+            typeof session.expiresAt === "string" &&
+            new Date(session.expiresAt) < new Date()) {
+            const cookieSettings = getCookieSettings();
+            res.clearCookie("session", cookieSettings);
             res.status(200).json({ isLoggedIn: false });
             return;
         }
@@ -113,7 +136,8 @@ const getSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
         if (!user) {
             // User no longer exists in database
-            res.clearCookie("session");
+            const cookieSettings = getCookieSettings();
+            res.clearCookie("session", cookieSettings);
             res.status(200).json({ isLoggedIn: false });
             return;
         }
@@ -137,11 +161,8 @@ exports.getSession = getSession;
  */
 const logoutUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.clearCookie("session", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
+        const cookieSettings = getCookieSettings();
+        res.clearCookie("session", cookieSettings);
         res.status(200).json({ message: "Logged out successfully" });
     }
     catch (error) {
