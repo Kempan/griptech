@@ -5,8 +5,9 @@ import { useState } from "react";
 import { PlusCircleIcon } from "lucide-react";
 import { Button } from "@/shadcn/components/ui/button";
 import CreateProductModal from "./CreateProductModal";
-import { Product } from "@/app/types";
+import { Product, ProductCategory } from "@/app/types";
 import { useTranslations } from "next-intl";
+import { useGetCategoriesQuery } from "@/app/state/api";
 
 interface CreateProductProps {
 	onProductCreated?: (newProduct: Product) => void;
@@ -17,6 +18,9 @@ export default function CreateProduct({
 }: CreateProductProps = {}) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const t = useTranslations();
+
+	// Fetch categories for the modal
+	const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
 
 	const handleProductCreated = (newProduct: Product) => {
 		setIsModalOpen(false);
@@ -36,6 +40,7 @@ export default function CreateProduct({
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
 				onCreate={handleProductCreated}
+				categories={categories}
 			/>
 		</>
 	);

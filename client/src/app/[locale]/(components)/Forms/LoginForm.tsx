@@ -54,7 +54,7 @@ export default function LoginForm({
 
 		try {
 			const response = await login({ email, password }).unwrap();
-
+			console.log("Login successful:", response);
 			// Check if user has admin role and redirect accordingly
 			if (response.user && response.user.roles.includes("admin")) {
 				router.push("/admin"); // Redirect to admin panel

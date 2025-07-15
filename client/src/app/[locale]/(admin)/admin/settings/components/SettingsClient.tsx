@@ -15,6 +15,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shadcn/components/ui/table";
+import { useTranslations } from "next-intl";
 
 type SettingType = "text" | "toggle";
 
@@ -34,7 +35,7 @@ export default function SettingsClient({
 	const [settings, setSettings] = useState<UserSetting[]>(initialSettings);
 	const [isModified, setIsModified] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
-
+	const t = useTranslations();
 	const handleSettingChange = (index: number, newValue: string | boolean) => {
 		const updatedSettings = [...settings];
 		updatedSettings[index].value = newValue;
@@ -105,7 +106,7 @@ export default function SettingsClient({
 			{isModified && (
 				<div className="mt-6 flex justify-end">
 					<Button onClick={handleSaveSettings} disabled={isSaving}>
-						{isSaving ? "Saving..." : "Save Changes"}
+						{isSaving ? t("saving") : t("saveChanges")}
 					</Button>
 				</div>
 			)}

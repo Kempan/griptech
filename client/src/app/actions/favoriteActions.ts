@@ -1,8 +1,7 @@
 // client/src/app/actions/favoriteActions.ts
 "use server";
 
-import { cookies } from "next/headers";
-import { getSession } from "@/app/lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 export interface Favorite {
 	id: number;
@@ -15,6 +14,7 @@ export interface Favorite {
 		slug: string;
 		price: number;
 		stockQuantity?: number;
+		enableStockManagement?: boolean;
 		categories?: Array<{
 			id: number;
 			name: string;
@@ -41,8 +41,8 @@ export async function getUserFavorites({
 	pageSize?: number;
 } = {}): Promise<FavoritesResponse> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
+		const authToken = await getAuthToken();
+		if (!authToken) {
 			return { favorites: [], totalCount: 0, pageCount: 0, currentPage: 1 };
 		}
 
@@ -57,7 +57,7 @@ export async function getUserFavorites({
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -85,8 +85,8 @@ export async function addToFavorites(productId: number): Promise<{
 	favorite?: Favorite;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
+		const authToken = await getAuthToken();
+		if (!authToken) {
 			return { success: false, message: "Not authenticated" };
 		}
 
@@ -96,7 +96,7 @@ export async function addToFavorites(productId: number): Promise<{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ productId }),
 			}
@@ -140,8 +140,8 @@ export async function removeFromFavorites(productId: number): Promise<{
 	message: string;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
+		const authToken = await getAuthToken();
+		if (!authToken) {
 			return { success: false, message: "Not authenticated" };
 		}
 
@@ -151,7 +151,7 @@ export async function removeFromFavorites(productId: number): Promise<{
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -188,8 +188,8 @@ export async function toggleFavorite(productId: number | string): Promise<{
 	isFavorited: boolean;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
+		const authToken = await getAuthToken();
+		if (!authToken) {
 			return {
 				success: false,
 				message: "Not authenticated",
@@ -206,7 +206,7 @@ export async function toggleFavorite(productId: number | string): Promise<{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ productId: numericProductId }),
 			}
@@ -247,8 +247,8 @@ export async function checkFavorites(
 	productIds: number[]
 ): Promise<Record<number, boolean>> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
+		const authToken = await getAuthToken();
+		if (!authToken) {
 			// Return all as false if not authenticated
 			return productIds.reduce((acc, id) => ({ ...acc, [id]: false }), {});
 		}
@@ -259,7 +259,7 @@ export async function checkFavorites(
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ productIds }),
 			}

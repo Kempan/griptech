@@ -1,22 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import slugify from "slugify"; // ✅ Import slugify library
+import { generateUniqueCategorySlug } from "../../lib/slugify";
 
 const prisma = new PrismaClient();
-
-/** 🔹 Utility function to generate a unique slug */
-const generateUniqueSlug = async (name: string): Promise<string> => {
-	let baseSlug = slugify(name, { lower: true, strict: true }); // Convert name to slug
-	let slug = baseSlug;
-	let count = 1;
-
-	// Check if the slug already exists in the database
-	while (await prisma.productCategory.findUnique({ where: { slug } })) {
-		slug = `${baseSlug}-${count++}`; // Append a number if it already exists
-	}
-
-	return slug;
-};
 
 /** 🔹 CREATE CATEGORY */
 export const createCategory = async (
@@ -31,16 +17,14 @@ export const createCategory = async (
 			return;
 		}
 
-		// Generate slug if not provided
-		if (!slug) {
-			slug = await generateUniqueSlug(name);
-		}
+		// Generate unique slug using the shared helper
+		slug = await generateUniqueCategorySlug(prisma, name, slug);
 
 		const category = await prisma.productCategory.create({
 			data: {
 				name,
 				slug,
-				parentId: parentId || null, // Assign parent if provided
+				parentId: parentId || null,
 			},
 		});
 
@@ -57,7 +41,6 @@ export const updateCategory = async (
 	res: Response
 ): Promise<void> => {
 	try {
-
 		const { id } = req.params;
 		const {
 			name,
@@ -78,17 +61,28 @@ export const updateCategory = async (
 			return;
 		}
 
+		// Only regenerate slug if explicitly provided
+		let finalSlug = category.slug;
+		if (slug !== undefined) {
+			finalSlug = await generateUniqueCategorySlug(
+				prisma,
+				name || category.name,
+				slug,
+				Number(id) // Exclude current category when checking uniqueness
+			);
+		}
+
 		// Update category
 		const updatedCategory = await prisma.productCategory.update({
 			where: { id: Number(id) },
 			data: {
-				name,
-				slug,
-				parentId: parentId || null,
-				description,
-				metaTitle,
-				metaDescription,
-				metaKeywords,
+				...(name !== undefined && { name }),
+				slug: finalSlug,
+				...(parentId !== undefined && { parentId: parentId || null }),
+				...(description !== undefined && { description }),
+				...(metaTitle !== undefined && { metaTitle }),
+				...(metaDescription !== undefined && { metaDescription }),
+				...(metaKeywords !== undefined && { metaKeywords }),
 			},
 		});
 

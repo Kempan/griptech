@@ -6,6 +6,7 @@ import AddToCartButton from "@/app/[locale]/(components)/Buttons/AddToCart";
 import Price from "@/app/[locale]/(components)/Price";
 import { Badge } from "@/shadcn/components/ui/badge";
 import FavoriteButton from "@/app/[locale]/(components)/Buttons/FavoriteButton";
+import { isOutOfStock, hasLowStock, getStockStatusColor } from "@/app/lib/utils/stock-utils";
 
 interface ProductCardProps {
 	product: Product;
@@ -58,17 +59,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 				showLoginButton={false}
 				className="text-md"
 			/>
-			{/* <Badge>test</Badge> */}
-			{/* {lastCategory ? (
-				<>
-					<div className="text-md">
-						{t("Category")}:{" "}
-						<span className="font-semibold">{lastCategory.name}</span>
-					</div>
-				</>
-			) : (
-				t("Uncategorized")
-			)} */}
+			
+			{/* Stock status badge */}
+			{product.enableStockManagement && (
+				<Badge 
+					variant={isOutOfStock(product) ? "destructive" : hasLowStock(product) ? "secondary" : "default"}
+					className="mt-1"
+				>
+					{isOutOfStock(product) ? t("OutOfStock") : hasLowStock(product) ? t("LowStock") : t("InStock")}
+				</Badge>
+			)}
+			
 			{/* <AddToCartButton product={product} translationKey="AddToCart" className="w-fit" /> */}
 		</div>
 	);

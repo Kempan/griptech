@@ -2,15 +2,17 @@
 
 import { User, UpdateUserInput } from "@/app/types";
 import { revalidatePath } from "next/cache";
-import { getSession } from "@/app/lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 /**
  * Get all users
  */
 export async function getUsers(): Promise<User[]> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return [];
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users`,
@@ -18,7 +20,7 @@ export async function getUsers(): Promise<User[]> {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -35,8 +37,10 @@ export async function getUsers(): Promise<User[]> {
  */
 export async function getUserById(id: number): Promise<User | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return null;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${id}`,
@@ -44,7 +48,7 @@ export async function getUserById(id: number): Promise<User | null> {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -70,8 +74,10 @@ export async function createUser(userData: {
 	billingAddress?: any;
 }): Promise<User | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return null;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users`,
@@ -79,7 +85,7 @@ export async function createUser(userData: {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(userData),
 			}
@@ -100,8 +106,10 @@ export async function updateUser(
 	userData: UpdateUserInput
 ): Promise<User | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return null;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${id}`,
@@ -109,7 +117,7 @@ export async function updateUser(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(userData),
 			}
@@ -130,8 +138,10 @@ export async function updateUser(
  */
 export async function deleteUser(id: number): Promise<boolean> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return false;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${id}`,
@@ -139,7 +149,7 @@ export async function deleteUser(id: number): Promise<boolean> {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -158,8 +168,10 @@ export async function deleteUser(id: number): Promise<boolean> {
  */
 export async function searchUsers(query: string): Promise<User[]> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return [];
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${
@@ -169,7 +181,7 @@ export async function searchUsers(query: string): Promise<User[]> {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -189,8 +201,10 @@ export async function connectOrderToUser(
 	userId: number | null
 ): Promise<boolean> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return false;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders/${orderId}/connect-user`,
@@ -198,7 +212,7 @@ export async function connectOrderToUser(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ userId }),
 			}
@@ -223,8 +237,9 @@ export async function getUserOrders(userId: number): Promise<{
 	currentPage: number;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return { orders: [], totalCount: 0, pageCount: 0, currentPage: 1 };
+		const authToken = await getAuthToken();
+		if (!authToken)
+			return { orders: [], totalCount: 0, pageCount: 0, currentPage: 1 };
 
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${userId}/orders`,
@@ -232,12 +247,14 @@ export async function getUserOrders(userId: number): Promise<{
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
 
-		return res.ok ? await res.json() : { orders: [], totalCount: 0, pageCount: 0, currentPage: 1 };
+		return res.ok
+			? await res.json()
+			: { orders: [], totalCount: 0, pageCount: 0, currentPage: 1 };
 	} catch (err) {
 		console.error("Error fetching user orders:", err);
 		return { orders: [], totalCount: 0, pageCount: 0, currentPage: 1 };
@@ -249,11 +266,19 @@ export async function getUserOrders(userId: number): Promise<{
  */
 export async function fetchUserProfile() {
 	try {
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/profile`,
 			{
 				cache: "no-store",
-				credentials: "include", // handled by browser; no manual header needed
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${authToken}`,
+				},
 			}
 		);
 
@@ -282,14 +307,19 @@ export async function updateUserAddresses({
 	useSameAddress: boolean;
 }) {
 	try {
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/addresses`,
 			{
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${authToken}`,
 				},
-				credentials: "include",
 				body: JSON.stringify({
 					shippingAddress,
 					billingAddress: useSameAddress ? null : billingAddress,

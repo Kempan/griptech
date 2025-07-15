@@ -17,6 +17,7 @@ import { Favorite } from "@/app/actions/favoriteActions";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/shadcn/lib/utils";
+import { getMaxQuantity, isOutOfStock } from "@/app/lib/utils/stock-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -58,11 +59,13 @@ export default function FavoriteItem({
 		transition,
 	};
 
-	// Calculate max quantity based on stock
-	const maxQuantity =
-		favorite.product?.stockQuantity && favorite.product.stockQuantity < 10
-			? favorite.product.stockQuantity
-			: 10;
+	// Calculate max quantity based on stock management
+	const maxQuantity = favorite.product ? getMaxQuantity({
+		...favorite.product,
+		enableStockManagement: favorite.product.enableStockManagement || false,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	} as any, 10) : 10;
 
 	const handleQuantityChange = (value: string) => {
 		const num = parseInt(value);
@@ -121,7 +124,14 @@ export default function FavoriteItem({
 
 	if (!favorite.product) return null;
 
-	const isOutOfStock = favorite.product.stockQuantity === 0;
+	const productForStock = {
+		...favorite.product,
+		enableStockManagement: favorite.product.enableStockManagement || false,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	} as any;
+
+	const outOfStock = isOutOfStock(productForStock);
 
 	return (
 		<>
@@ -205,7 +215,7 @@ export default function FavoriteItem({
 									variant="outline"
 									className="h-8 w-8"
 									onClick={decrementQuantity}
-									disabled={quantity <= 1 || isOutOfStock}
+									disabled={quantity <= 1 || outOfStock}
 								>
 									<Minus className="h-3 w-3" />
 								</Button>
@@ -217,7 +227,7 @@ export default function FavoriteItem({
 									value={quantity}
 									onChange={(e) => handleQuantityChange(e.target.value)}
 									className="w-16 h-8 text-center"
-									disabled={isOutOfStock}
+									disabled={outOfStock}
 								/>
 
 								<Button
@@ -225,7 +235,7 @@ export default function FavoriteItem({
 									variant="outline"
 									className="h-8 w-8"
 									onClick={incrementQuantity}
-									disabled={quantity >= maxQuantity || isOutOfStock}
+									disabled={quantity >= maxQuantity || outOfStock}
 								>
 									<Plus className="h-3 w-3" />
 								</Button>
@@ -236,7 +246,7 @@ export default function FavoriteItem({
 								size="sm"
 								variant={addedToCart ? "default" : "outline"}
 								onClick={handleAddToCart}
-								disabled={isOutOfStock}
+								disabled={outOfStock}
 								className={cn(
 									"transition-all",
 									addedToCart && "bg-gray-800 hover:bg-gray-900"
@@ -245,7 +255,7 @@ export default function FavoriteItem({
 								<ShoppingCart className="w-4 h-4 mr-1" />
 								{addedToCart
 									? t("Added")
-									: isOutOfStock
+									: outOfStock
 									? t("OutOfStock")
 									: t("AddToCart")}
 							</Button>

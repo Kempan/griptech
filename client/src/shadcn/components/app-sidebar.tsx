@@ -71,7 +71,7 @@ export function AppSidebar({
 		: [];
 
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar collapsible="offcanvas" {...props}>
 			<SidebarContent>
 				{categoryNavItems.length > 0 ? (
 					<NavMain items={categoryNavItems} />

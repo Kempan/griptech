@@ -13,6 +13,7 @@ import { formatCurrency } from "@/app/lib/utils/formatCurrency";
 import { toggleFavorite, checkFavorites } from "@/app/actions/favoriteActions";
 import { cn } from "@/shadcn/lib/utils";
 import { useRouter } from "next/navigation";
+import { isOutOfStock, getMaxQuantity } from "@/app/lib/utils/stock-utils";
 
 interface ProductDetailsClientProps {
 	id: string;
@@ -22,6 +23,7 @@ interface ProductDetailsClientProps {
 	slug: string;
 	sizes?: string[];
 	stockQuantity?: number;
+	enableStockManagement?: boolean;
 }
 
 const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
@@ -32,6 +34,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 	slug,
 	sizes: propSizes,
 	stockQuantity,
+	enableStockManagement = false,
 }) => {
 	const t = useTranslations();
 	const router = useRouter();
@@ -56,11 +59,18 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 		checkFavoriteStatus();
 	}, [id]);
 
-	// Determine if product is out of stock
-	const isOutOfStock = stockQuantity !== undefined && stockQuantity <= 0;
+	// Create a product object for stock utilities
+	const productForStock = {
+		id: parseInt(id),
+		stockQuantity: stockQuantity || 0,
+		enableStockManagement,
+	} as any; // Type assertion for utility functions
 
-	// Calculate max quantity based on stock
-	const maxQuantity = stockQuantity && stockQuantity < 10 ? stockQuantity : 10;
+	// Determine if product is out of stock using new logic
+	const outOfStock = isOutOfStock(productForStock);
+
+	// Calculate max quantity based on stock management
+	const maxQuantity = getMaxQuantity(productForStock, 10);
 
 	const handleQuantityChange = (value: string) => {
 		const num = parseInt(value);
@@ -154,7 +164,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 						variant="outline"
 						className="h-10 w-10"
 						onClick={decrementQuantity}
-						disabled={quantity <= 1 || isOutOfStock}
+						disabled={quantity <= 1 || outOfStock}
 					>
 						<Minus className="h-4 w-4" />
 					</Button>
@@ -166,7 +176,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 						value={quantity}
 						onChange={(e) => handleQuantityChange(e.target.value)}
 						className="w-20 h-10 text-center"
-						disabled={isOutOfStock}
+						disabled={outOfStock}
 					/>
 
 					<Button
@@ -174,12 +184,12 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 						variant="outline"
 						className="h-10 w-10"
 						onClick={incrementQuantity}
-						disabled={quantity >= maxQuantity || isOutOfStock}
+						disabled={quantity >= maxQuantity || outOfStock}
 					>
 						<Plus className="h-4 w-4" />
 					</Button>
 
-					{stockQuantity && stockQuantity <= 5 && stockQuantity > 0 && (
+					{enableStockManagement && stockQuantity && stockQuantity <= 5 && stockQuantity > 0 && (
 						<span className="text-sm text-orange-600 ml-2">
 							{t("OnlyXLeft", { count: stockQuantity })}
 						</span>
@@ -195,10 +205,10 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 						addedToCart
 							? "bg-gray-800 hover:bg-gray-900"
 							: "bg-primary hover:bg-primary/90",
-						isOutOfStock && "opacity-50 cursor-not-allowed"
+						outOfStock && "opacity-50 cursor-not-allowed"
 					)}
 					onClick={handleAddToCart}
-					disabled={isOutOfStock || addedToCart}
+					disabled={outOfStock || addedToCart}
 				>
 					{addedToCart ? (
 						<>
@@ -208,7 +218,7 @@ const ProductDetailsClient: React.FC<ProductDetailsClientProps> = ({
 					) : (
 						<>
 							<ShoppingBag className="w-5 h-5 mr-2" />
-							{isOutOfStock ? t("OutOfStock") : t("AddToCart")}
+							{outOfStock ? t("OutOfStock") : t("AddToCart")}
 						</>
 					)}
 				</Button>

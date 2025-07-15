@@ -14,7 +14,7 @@ export const SectionWrapper: React.FC<WrapperProps> = ({
 	return (
 		<section
 			id={id}
-			className={`mx-auto max-w-[2400px] w-full ${className}`}
+			className={`mx-auto max-w-[2600px] w-full ${className}`}
 		>
 			{children}
 		</section>

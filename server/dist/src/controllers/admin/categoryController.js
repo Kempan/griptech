@@ -8,25 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCategoryById = exports.deleteCategory = exports.updateCategory = exports.createCategory = void 0;
 const client_1 = require("@prisma/client");
-const slugify_1 = __importDefault(require("slugify")); // ✅ Import slugify library
+const slugify_1 = require("../../lib/slugify");
 const prisma = new client_1.PrismaClient();
-/** 🔹 Utility function to generate a unique slug */
-const generateUniqueSlug = (name) => __awaiter(void 0, void 0, void 0, function* () {
-    let baseSlug = (0, slugify_1.default)(name, { lower: true, strict: true }); // Convert name to slug
-    let slug = baseSlug;
-    let count = 1;
-    // Check if the slug already exists in the database
-    while (yield prisma.productCategory.findUnique({ where: { slug } })) {
-        slug = `${baseSlug}-${count++}`; // Append a number if it already exists
-    }
-    return slug;
-});
 /** 🔹 CREATE CATEGORY */
 const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -35,15 +21,13 @@ const createCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
             res.status(400).json({ message: "Name is required" });
             return;
         }
-        // Generate slug if not provided
-        if (!slug) {
-            slug = yield generateUniqueSlug(name);
-        }
+        // Generate unique slug using the shared helper
+        slug = yield (0, slugify_1.generateUniqueCategorySlug)(prisma, name, slug);
         const category = yield prisma.productCategory.create({
             data: {
                 name,
                 slug,
-                parentId: parentId || null, // Assign parent if provided
+                parentId: parentId || null,
             },
         });
         res.status(201).json(category);
@@ -67,18 +51,16 @@ const updateCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
             res.status(404).json({ message: "Category not found" });
             return;
         }
+        // Only regenerate slug if explicitly provided
+        let finalSlug = category.slug;
+        if (slug !== undefined) {
+            finalSlug = yield (0, slugify_1.generateUniqueCategorySlug)(prisma, name || category.name, slug, Number(id) // Exclude current category when checking uniqueness
+            );
+        }
         // Update category
         const updatedCategory = yield prisma.productCategory.update({
             where: { id: Number(id) },
-            data: {
-                name,
-                slug,
-                parentId: parentId || null,
-                description,
-                metaTitle,
-                metaDescription,
-                metaKeywords,
-            },
+            data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (name !== undefined && { name })), { slug: finalSlug }), (parentId !== undefined && { parentId: parentId || null })), (description !== undefined && { description })), (metaTitle !== undefined && { metaTitle })), (metaDescription !== undefined && { metaDescription })), (metaKeywords !== undefined && { metaKeywords })),
         });
         res.status(200).json(updatedCategory);
     }

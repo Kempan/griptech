@@ -13,10 +13,9 @@ import {
 import { Button } from "@/shadcn/components/ui/button";
 import { Badge } from "@/shadcn/components/ui/badge";
 import { Edit, Trash2, ShoppingCart, CheckCircle } from "lucide-react";
-import { ProductBundle } from "@/app/actions/bundleActions";
+import { ProductBundle, deleteBundle } from "@/app/actions/bundleActions";
 import { formatCurrency } from "@/app/lib/utils/formatCurrency";
 import { useTranslations } from "next-intl";
-import { deleteBundle } from "@/app/actions/bundleActions";
 import { useCart } from "@/app/state/cartHooks";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,10 +33,9 @@ import { toast } from "sonner";
 
 interface BundleCardProps {
 	bundle: ProductBundle;
-	onDelete: (bundleId: number) => void;
 }
 
-export default function BundleCard({ bundle, onDelete }: BundleCardProps) {
+export default function BundleCard({ bundle }: BundleCardProps) {
 	const t = useTranslations();
 	const { addItemToCart } = useCart();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -61,10 +59,13 @@ export default function BundleCard({ bundle, onDelete }: BundleCardProps) {
 		try {
 			const result = await deleteBundle(bundle.id);
 			if (result.success) {
-				onDelete(bundle.id);
+				toast.success(t("BundleDeletedSuccessfully"));
+			} else {
+				toast.error(result.message || t("FailedToDeleteBundle"));
 			}
 		} catch (error) {
 			console.error("Error deleting bundle:", error);
+			toast.error(t("FailedToDeleteBundle"));
 		} finally {
 			setIsDeleting(false);
 			setShowDeleteDialog(false);

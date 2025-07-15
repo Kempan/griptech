@@ -1,8 +1,8 @@
 // client/src/app/actions/admin/orderActions.ts
 "use server";
 
-import { Order, OrderStatus, OrderItem, UpdateOrderInput } from "@/app/types";
-import { getSession } from "@/app/lib/utils/get-session";
+import { Order, OrderStatus, UpdateOrderInput } from "@/app/types";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 export interface AdminOrdersResponse {
 	orders: Order[];
@@ -28,9 +28,9 @@ export async function getAdminOrders({
 	sortOrder?: "asc" | "desc";
 }): Promise<AdminOrdersResponse> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const queryParams = new URLSearchParams({
 			...(search ? { search } : {}),
@@ -47,7 +47,7 @@ export async function getAdminOrders({
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -68,9 +68,9 @@ export async function getAdminOrders({
  */
 export async function getOrderById(id: number): Promise<Order | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders/${id}`,
@@ -78,7 +78,7 @@ export async function getOrderById(id: number): Promise<Order | null> {
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -105,9 +105,9 @@ export async function updateOrder(
 	data: UpdateOrderInput
 ): Promise<Order | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders/${id}`,
@@ -115,7 +115,7 @@ export async function updateOrder(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(data),
 			}
@@ -157,9 +157,9 @@ export async function updateOrderAdminNote(
  */
 export async function deleteOrder(id: number): Promise<boolean> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders/${id}`,
@@ -167,7 +167,7 @@ export async function deleteOrder(id: number): Promise<boolean> {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -201,9 +201,9 @@ export async function createOrder(orderData: {
 	paymentMethod?: string;
 }): Promise<{ order: any; success: boolean; error?: string } | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders`,
@@ -211,7 +211,7 @@ export async function createOrder(orderData: {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(orderData),
 			}
@@ -242,9 +242,9 @@ export async function getOrderByNumber(
 	orderNumber: string
 ): Promise<any | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/user/${orderNumber}`,
@@ -252,7 +252,7 @@ export async function getOrderByNumber(
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -279,9 +279,9 @@ export async function getUserOrders(
 	pageSize = 10
 ): Promise<AdminOrdersResponse> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/orders?` +
@@ -293,7 +293,7 @@ export async function getUserOrders(
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -316,9 +316,9 @@ export async function getUserOrderById(
 	orderNumber: string
 ): Promise<Order | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/orders/${orderNumber}`,
@@ -326,7 +326,7 @@ export async function getUserOrderById(
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -357,9 +357,9 @@ export async function getOrderStatistics(): Promise<{
 	recentOrders: Order[];
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/orders/statistics`,
@@ -367,7 +367,7 @@ export async function getOrderStatistics(): Promise<{
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);

@@ -1,7 +1,6 @@
 // server/src/controllers/public/orderController.ts
 import { Request, Response } from "express";
 import { OrderStatus, PrismaClient } from "@prisma/client";
-import { decrypt } from "../../lib/session";
 
 const prisma = new PrismaClient();
 
@@ -13,27 +12,13 @@ export const createOrder = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
+		// Get current user from JWT if authenticated
 		let sessionUserId = null;
-		
-		if (sessionCookie) {
-			try {
-				const session = await decrypt(sessionCookie);
-				if (session?.userId) {
-					// Verify the user exists before using their ID
-					const user = await prisma.user.findUnique({
-						where: { id: parseInt(session.userId.toString()) },
-						select: { id: true },
-					});
-					console.log("user from session", user);
-					if (user) {
-						sessionUserId = user.id;
-					}
-				}
-			} catch (e) {
-				console.error("Session decryption error:", e);
-			}
+
+		// Check if user is authenticated (requireAuth middleware would have set req.user)
+		if (req.user) {
+			sessionUserId = req.user.id;
+			console.log("Authenticated user creating order:", sessionUserId);
 		}
 
 		const {
@@ -45,7 +30,7 @@ export const createOrder = async (
 			billingAddress,
 			customerNote,
 			paymentMethod,
-			userId: bodyUserId, // Extract userId from request body
+			userId: bodyUserId,
 		} = req.body;
 
 		console.log("Body userId:", bodyUserId, "Session userId:", sessionUserId);
@@ -80,7 +65,10 @@ export const createOrder = async (
 					throw new Error(`Product with ID ${item.productId} not found`);
 				}
 
-				if (product.stockQuantity != null && product.stockQuantity < item.quantity) {
+				if (
+					product.stockQuantity != null &&
+					product.stockQuantity < item.quantity
+				) {
 					throw new Error(`Not enough stock for product "${product.name}"`);
 				}
 
@@ -220,20 +208,14 @@ export const getUserOrders = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		// The requireAuth middleware already validated the user
+		// and attached user info to req.user
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 
 		// Extract query parameters
 		const page = parseInt(req.query.page as string) || 1;
@@ -242,16 +224,6 @@ export const getUserOrders = async (
 		const status = req.query.status as OrderStatus | undefined;
 		const sortBy = (req.query.sortBy as string) || "createdAt";
 		const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
-
-		console.log("Backend: getUserOrders - received params:", {
-			userId,
-			page,
-			pageSize,
-			search,
-			status,
-			sortBy,
-			sortOrder,
-		});
 
 		// Build where clause with filters
 		const whereClause: any = { userId };
@@ -284,11 +256,6 @@ export const getUserOrders = async (
 				},
 			];
 		}
-
-		console.log(
-			"Backend: Where clause for orders query:",
-			JSON.stringify(whereClause, null, 2)
-		);
 
 		// Count total user orders with filters
 		const totalCount = await prisma.order.count({
@@ -367,20 +334,11 @@ export const getUserOrderByNumber = async (
 	try {
 		const { orderNumber } = req.params;
 
-		// Try to get current user from session
-		const sessionCookie = req.cookies.session;
+		// Try to get current user from req.user (set by auth middleware)
 		let userId: number | null = null;
 
-		if (sessionCookie) {
-			try {
-				const session = await decrypt(sessionCookie);
-				if (session?.userId) {
-					userId = parseInt(session.userId.toString());
-				}
-			} catch (e) {
-				// Invalid session, but we'll still allow finding the order
-				console.warn("Invalid session when retrieving order");
-			}
+		if (req.user) {
+			userId = req.user.id;
 		}
 
 		// Build the query - either filter by user ID if authenticated,
@@ -459,29 +417,13 @@ export const getUserOrderById = async (
 			return;
 		}
 
-		// Get user from session
-		const sessionCookie = req.cookies.session;
-		let userId: number | null = null;
-
-		if (!sessionCookie) {
+		// Get user from req.user (set by auth middleware)
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		try {
-			const session = await decrypt(sessionCookie);
-			if (session?.userId) {
-				userId = parseInt(session.userId.toString());
-			}
-		} catch (e) {
-			res.status(401).json({ message: "Invalid session" });
-			return;
-		}
-
-		if (!userId) {
-			res.status(401).json({ message: "User not found in session" });
-			return;
-		}
+		const userId = req.user.id;
 
 		// Find the order - ensuring it belongs to the current user
 		const order = await prisma.order.findFirst({

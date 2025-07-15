@@ -1,7 +1,8 @@
 // client/src/app/actions/bundleActions.ts
 "use server";
 
-import { getSession } from "@/app/lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
+import { revalidatePath } from "next/cache";
 
 export interface BundleItem {
 	productId: number;
@@ -50,9 +51,9 @@ export async function getUserBundles({
 	pageSize?: number;
 } = {}): Promise<BundlesResponse> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { bundles: [], totalCount: 0, pageCount: 0, currentPage: 1 };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const queryParams = new URLSearchParams({
@@ -66,17 +67,10 @@ export async function getUserBundles({
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
-
-		if (!response.ok) {
-			if (response.status === 401) {
-				return { bundles: [], totalCount: 0, pageCount: 0, currentPage: 1 };
-			}
-			throw new Error(`Failed to fetch bundles: ${response.status}`);
-		}
 
 		return await response.json();
 	} catch (error) {
@@ -90,8 +84,10 @@ export async function getUserBundles({
  */
 export async function getBundleById(id: number): Promise<ProductBundle | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) return null;
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/bundles/${id}`,
@@ -99,7 +95,7 @@ export async function getBundleById(id: number): Promise<ProductBundle | null> {
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -128,9 +124,9 @@ export async function createBundle(data: {
 	bundle?: ProductBundle;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -139,7 +135,7 @@ export async function createBundle(data: {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(data),
 			}
@@ -154,6 +150,11 @@ export async function createBundle(data: {
 		}
 
 		const result = await response.json();
+
+		// Revalidate the bundles pages
+		revalidatePath("/favorite-bundles");
+		revalidatePath("/[locale]/favorite-bundles");
+
 		return {
 			success: true,
 			message: result.message,
@@ -184,9 +185,9 @@ export async function updateBundle(
 	bundle?: ProductBundle;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -195,7 +196,7 @@ export async function updateBundle(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(data),
 			}
@@ -210,6 +211,13 @@ export async function updateBundle(
 		}
 
 		const result = await response.json();
+
+		// Revalidate the bundle detail page and list
+		revalidatePath(`/favorite-bundles/${id}`);
+		revalidatePath(`/[locale]/favorite-bundles/${id}`);
+		revalidatePath("/favorite-bundles");
+		revalidatePath("/[locale]/favorite-bundles");
+
 		return {
 			success: true,
 			message: result.message,
@@ -241,9 +249,9 @@ export async function updateBundleItems(
 	bundle?: ProductBundle;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -252,7 +260,7 @@ export async function updateBundleItems(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ items }),
 			}
@@ -267,6 +275,11 @@ export async function updateBundleItems(
 		}
 
 		const result = await response.json();
+
+		// Revalidate the bundle detail page
+		revalidatePath(`/favorite-bundles/${id}`);
+		revalidatePath(`/[locale]/favorite-bundles/${id}`);
+
 		return {
 			success: true,
 			message: result.message,
@@ -297,9 +310,9 @@ export async function addProductToBundle(
 	bundle?: ProductBundle;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -308,7 +321,7 @@ export async function addProductToBundle(
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify({ productId, quantity }),
 			}
@@ -323,6 +336,13 @@ export async function addProductToBundle(
 		}
 
 		const result = await response.json();
+
+		// Revalidate the bundle detail page and list
+		revalidatePath(`/favorite-bundles/${bundleId}`);
+		revalidatePath(`/[locale]/favorite-bundles/${bundleId}`);
+		revalidatePath("/favorite-bundles");
+		revalidatePath("/[locale]/favorite-bundles");
+
 		return {
 			success: true,
 			message: result.message,
@@ -351,9 +371,9 @@ export async function removeProductFromBundle(
 	message: string;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -362,7 +382,7 @@ export async function removeProductFromBundle(
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -376,6 +396,11 @@ export async function removeProductFromBundle(
 		}
 
 		const result = await response.json();
+
+		// Revalidate the bundle detail page
+		revalidatePath(`/favorite-bundles/${bundleId}`);
+		revalidatePath(`/[locale]/favorite-bundles/${bundleId}`);
+
 		return {
 			success: true,
 			message: result.message,
@@ -400,9 +425,9 @@ export async function deleteBundle(id: number): Promise<{
 	message: string;
 }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			return { success: false, message: "Not authenticated" };
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -411,7 +436,7 @@ export async function deleteBundle(id: number): Promise<{
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);
@@ -423,6 +448,10 @@ export async function deleteBundle(id: number): Promise<{
 				message: error.message || "Failed to delete bundle",
 			};
 		}
+
+		// Revalidate the bundles list page
+		revalidatePath("/favorite-bundles");
+		revalidatePath("/[locale]/favorite-bundles");
 
 		return {
 			success: true,

@@ -11,37 +11,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserOrderById = exports.getUserOrderByNumber = exports.getUserOrders = exports.createOrder = void 0;
 const client_1 = require("@prisma/client");
-const session_1 = require("../../lib/session");
 const prisma = new client_1.PrismaClient();
 /**
  * Create a new order (public checkout endpoint)
  */
 const createOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
+        // Get current user from JWT if authenticated
         let sessionUserId = null;
-        if (sessionCookie) {
-            try {
-                const session = yield (0, session_1.decrypt)(sessionCookie);
-                if (session === null || session === void 0 ? void 0 : session.userId) {
-                    // Verify the user exists before using their ID
-                    const user = yield prisma.user.findUnique({
-                        where: { id: parseInt(session.userId.toString()) },
-                        select: { id: true },
-                    });
-                    console.log("user from session", user);
-                    if (user) {
-                        sessionUserId = user.id;
-                    }
-                }
-            }
-            catch (e) {
-                console.error("Session decryption error:", e);
-            }
+        // Check if user is authenticated (requireAuth middleware would have set req.user)
+        if (req.user) {
+            sessionUserId = req.user.id;
+            console.log("Authenticated user creating order:", sessionUserId);
         }
-        const { items, customerEmail, customerName, customerPhone, shippingAddress, billingAddress, customerNote, paymentMethod, userId: bodyUserId, // Extract userId from request body
-         } = req.body;
+        const { items, customerEmail, customerName, customerPhone, shippingAddress, billingAddress, customerNote, paymentMethod, userId: bodyUserId, } = req.body;
         console.log("Body userId:", bodyUserId, "Session userId:", sessionUserId);
         // Basic validation
         if (!items ||
@@ -66,7 +49,8 @@ const createOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 if (!product) {
                     throw new Error(`Product with ID ${item.productId} not found`);
                 }
-                if (product.stockQuantity != null && product.stockQuantity < item.quantity) {
+                if (product.stockQuantity != null &&
+                    product.stockQuantity < item.quantity) {
                     throw new Error(`Not enough stock for product "${product.name}"`);
                 }
                 // Calculate item price
@@ -181,18 +165,13 @@ exports.createOrder = createOrder;
  */
 const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        // The requireAuth middleware already validated the user
+        // and attached user info to req.user
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         // Extract query parameters
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
@@ -200,15 +179,6 @@ const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const status = req.query.status;
         const sortBy = req.query.sortBy || "createdAt";
         const sortOrder = req.query.sortOrder || "desc";
-        console.log("Backend: getUserOrders - received params:", {
-            userId,
-            page,
-            pageSize,
-            search,
-            status,
-            sortBy,
-            sortOrder,
-        });
         // Build where clause with filters
         const whereClause = { userId };
         // Add status filter if provided
@@ -238,7 +208,6 @@ const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             ];
         }
-        console.log("Backend: Where clause for orders query:", JSON.stringify(whereClause, null, 2));
         // Count total user orders with filters
         const totalCount = yield prisma.order.count({
             where: whereClause,
@@ -291,20 +260,10 @@ exports.getUserOrders = getUserOrders;
 const getUserOrderByNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { orderNumber } = req.params;
-        // Try to get current user from session
-        const sessionCookie = req.cookies.session;
+        // Try to get current user from req.user (set by auth middleware)
         let userId = null;
-        if (sessionCookie) {
-            try {
-                const session = yield (0, session_1.decrypt)(sessionCookie);
-                if (session === null || session === void 0 ? void 0 : session.userId) {
-                    userId = parseInt(session.userId.toString());
-                }
-            }
-            catch (e) {
-                // Invalid session, but we'll still allow finding the order
-                console.warn("Invalid session when retrieving order");
-            }
+        if (req.user) {
+            userId = req.user.id;
         }
         // Build the query - either filter by user ID if authenticated,
         // or just find by order number for recent guest orders
@@ -363,27 +322,12 @@ const getUserOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             res.status(400).json({ message: "Invalid order ID" });
             return;
         }
-        // Get user from session
-        const sessionCookie = req.cookies.session;
-        let userId = null;
-        if (!sessionCookie) {
+        // Get user from req.user (set by auth middleware)
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        try {
-            const session = yield (0, session_1.decrypt)(sessionCookie);
-            if (session === null || session === void 0 ? void 0 : session.userId) {
-                userId = parseInt(session.userId.toString());
-            }
-        }
-        catch (e) {
-            res.status(401).json({ message: "Invalid session" });
-            return;
-        }
-        if (!userId) {
-            res.status(401).json({ message: "User not found in session" });
-            return;
-        }
+        const userId = req.user.id;
         // Find the order - ensuring it belongs to the current user
         const order = yield prisma.order.findFirst({
             where: {

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-
+import { generateUniqueProductSlug } from "../../lib/slugify";
 const prisma = new PrismaClient();
 
 export const getAdminProducts = async (req: Request, res: Response) => {
@@ -69,19 +69,87 @@ export const createProduct = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const { slug, name, price, rating, stockQuantity } = req.body;
-		const product = await prisma.product.create({
-			data: {
-				slug,
-				name,
-				price,
-				rating,
-				stockQuantity,
+		const { 
+			slug, 
+			name, 
+			price, 
+			rating, 
+			stockQuantity, 
+			enableStockManagement,
+			description,
+			shortDescription,
+			metaTitle,
+			metaDescription,
+			metaKeywords,
+			categoryIds 
+		} = req.body;
+
+		// Validate required fields
+		if (!name) {
+			res.status(400).json({ message: "Product name is required" });
+			return;
+		}
+
+		// Generate unique slug (using provided slug or generating from name)
+		const uniqueSlug = await generateUniqueProductSlug(prisma, name, slug);
+
+		// Use transaction to create product and categories atomically
+		const result = await prisma.$transaction(async (tx) => {
+			// Create the product
+			const product = await tx.product.create({
+				data: {
+					slug: uniqueSlug,
+					name,
+					price: price || 0,
+					rating: rating || 0,
+					stockQuantity: enableStockManagement ? (stockQuantity || 0) : null,
+					description: description || null,
+					shortDescription: shortDescription || null,
+					metaTitle: metaTitle || null,
+					metaDescription: metaDescription || null,
+					metaKeywords: metaKeywords || null,
+				},
+			});
+
+			// Create category relations if categoryIds are provided
+			if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
+				await tx.productCategoryRelation.createMany({
+					data: categoryIds.map((categoryId: number) => ({
+						productId: product.id,
+						categoryId,
+					})),
+				});
+			}
+
+			return product;
+		});
+
+		// Fetch the created product with categories
+		const productWithCategories = await prisma.product.findUnique({
+			where: { id: result.id },
+			include: {
+				productCategories: {
+					include: { category: true },
+				},
 			},
 		});
-		res.status(201).json(product);
+
+		// Convert decimal to number for response
+		const formattedProduct = {
+			...productWithCategories,
+			price: Number(productWithCategories?.price),
+			createdAt: productWithCategories?.createdAt.toISOString(),
+			updatedAt: productWithCategories?.updatedAt.toISOString(),
+			categories: productWithCategories?.productCategories.map((rel) => ({
+				id: rel.category.id,
+				name: rel.category.name,
+				slug: rel.category.slug,
+			})),
+		};
+
+		res.status(201).json(formattedProduct);
 	} catch (error) {
-		console.error(error);
+		console.error("Error creating product:", error);
 		res.status(500).json({ message: "Error creating product" });
 	}
 };
@@ -142,6 +210,8 @@ export const updateProduct = async (
 			slug,
 			price,
 			stockQuantity,
+			enableStockManagement,
+			rating,
 			categoryIds,
 			// SEO fields
 			description,
@@ -160,6 +230,23 @@ export const updateProduct = async (
 			return;
 		}
 
+		// Only regenerate slug if:
+		// 1. A new slug is explicitly provided, OR
+		// 2. The name has changed and no slug was provided
+		let finalSlug = product.slug;
+		if (slug !== undefined) {
+			// User provided a slug (even if empty), generate unique slug
+			finalSlug = await generateUniqueProductSlug(
+				prisma,
+				name || product.name,
+				slug
+			);
+		} else if (name && name !== product.name) {
+			// Name changed but no slug provided, keep existing slug
+			// You could change this behavior if you want to regenerate on name change
+			finalSlug = product.slug;
+		}
+
 		// Transaction to update product and categories atomically
 		await prisma.$transaction(async (tx) => {
 			// Update product details
@@ -167,9 +254,13 @@ export const updateProduct = async (
 				where: { id: Number(id) },
 				data: {
 					...(name !== undefined && { name }),
-					...(slug !== undefined && { slug }),
+					slug: finalSlug,
 					...(price !== undefined && { price }),
-					...(stockQuantity !== undefined && { stockQuantity }),
+					...(enableStockManagement !== undefined && { enableStockManagement }),
+					...(stockQuantity !== undefined && { 
+						stockQuantity: enableStockManagement ? stockQuantity : null 
+					}),
+					...(rating !== undefined && { rating }),
 					// Add SEO fields to update
 					...(description !== undefined && { description }),
 					...(shortDescription !== undefined && { shortDescription }),

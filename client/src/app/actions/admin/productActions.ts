@@ -2,7 +2,7 @@
 "use server";
 
 import { Product } from "@/app/types";
-import { getSession } from "@/app/lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 export interface AdminProductsResponse {
 	products: Product[];
@@ -24,11 +24,12 @@ export async function getAdminProducts({
 	sortBy?: string;
 }): Promise<AdminProductsResponse> {
 	try {
-		const sessionCookie = await getSession();
+		const authToken = await getAuthToken();
 
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
+
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/products?` +
 				new URLSearchParams({
@@ -41,7 +42,7 @@ export async function getAdminProducts({
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);

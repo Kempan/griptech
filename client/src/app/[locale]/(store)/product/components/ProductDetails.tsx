@@ -15,6 +15,7 @@ interface ProductDetailsProps {
 		slug: string;
 		sizes?: string[];
 		stockQuantity?: number;
+		enableStockManagement?: boolean;
 		categories?: Array<{ name: string; slug: string }>;
 	};
 }
@@ -29,9 +30,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 		slug,
 		sizes,
 		stockQuantity,
+		enableStockManagement = false,
 		categories = [],
 	} = product;
-	const inStock = stockQuantity && stockQuantity > 0;
+	
+	// Use new stock logic
+	const inStock = enableStockManagement ? (stockQuantity && stockQuantity > 0) : true;
 
 	return (
 		<div className="flex flex-col flex-1 gap-6">
@@ -92,6 +96,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 						slug,
 						sizes,
 						stockQuantity,
+						enableStockManagement,
 					}}
 				/>
 			</Suspense>

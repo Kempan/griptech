@@ -2,7 +2,7 @@
 "use server";
 
 import { ProductCategory } from "@/app/types";
-import { getSession } from "@/app/lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 /**
  * Fetch a single category by ID
@@ -11,9 +11,9 @@ export async function getCategoryById(
 	id: number
 ): Promise<ProductCategory | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/categories/${id}`,
@@ -21,7 +21,7 @@ export async function getCategoryById(
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,	
 				},
 			}
 		);
@@ -58,9 +58,9 @@ export async function updateCategory(
 	}
 ): Promise<ProductCategory | null> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const response = await fetch(
@@ -69,7 +69,7 @@ export async function updateCategory(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(data),
 			}
@@ -91,12 +91,17 @@ export async function updateCategory(
  */
 export async function deleteCategory(id: number): Promise<boolean> {
 	try {
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
+		}
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/categories/${id}`,
 			{
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${authToken}`,
 				},
 			}
 		);

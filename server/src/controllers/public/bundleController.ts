@@ -1,17 +1,10 @@
 // server/src/controllers/public/bundleController.ts
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { decrypt } from "../../lib/session";
 
 const prisma = new PrismaClient();
 
 // Define types
-interface SessionPayload {
-	userId: string | number;
-	roles?: string[];
-	expiresAt?: Date | string;
-}
-
 interface BundleItem {
 	productId: number;
 	quantity: number;
@@ -26,19 +19,13 @@ export const getUserBundles = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		// Use JWT auth from middleware
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 
 		// Get pagination parameters
 		const page = parseInt(req.query.page as string) || 1;
@@ -128,19 +115,12 @@ export const getBundleById = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 
 		// Get bundle
@@ -212,19 +192,12 @@ export const createBundle = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const { name, description } = req.body;
 
 		// Validate input
@@ -261,19 +234,12 @@ export const updateBundle = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 		const { name, description } = req.body;
 
@@ -314,19 +280,12 @@ export const updateBundleItems = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 		const { items } = req.body;
 
@@ -377,19 +336,12 @@ export const addProductToBundle = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 		const { productId, quantity = 1 } = req.body;
 
@@ -468,19 +420,12 @@ export const removeProductFromBundle = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 		const productId = parseInt(req.params.productId);
 
@@ -524,19 +469,12 @@ export const deleteBundle = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = (await decrypt(sessionCookie)) as SessionPayload | null;
-		if (!session || !session.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const bundleId = parseInt(req.params.id);
 
 		// Check if bundle exists and belongs to user

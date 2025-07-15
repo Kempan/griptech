@@ -10,51 +10,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireAuth = void 0;
-const session_1 = require("../lib/session"); // Same decrypt used in client
+const jwt_1 = require("../lib/jwt");
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
-// Utility: Check session validity and attach to req.user
 const requireAuth = (roles = []) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const cookie = req.cookies.session;
-        if (!cookie) {
-            res.status(401).json({ message: "Not authenticated" });
+        // Try to get token from cookie or Authorization header
+        const token = req.cookies["auth-token"] ||
+            ((_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", ""));
+        if (!token) {
+            res.status(401).json({ message: "No token provided" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(cookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Invalid session" });
-            return;
-        }
-        if (session.expiresAt &&
-            typeof session.expiresAt === 'string' &&
-            new Date(session.expiresAt).getTime() < Date.now()) {
-            res.status(401).json({ message: "Session expired" });
-            return;
-        }
+        const decoded = (0, jwt_1.verifyJWT)(token);
         // Attach user info to request
         req.user = {
-            id: Number(session.userId),
-            roles: Array.isArray(session.roles) ? session.roles : ["customer"],
-            expiresAt: typeof session.expiresAt === 'string' ? session.expiresAt : undefined,
+            id: decoded.userId,
+            email: decoded.email,
+            roles: decoded.roles || [],
         };
         // Role check
-        if (roles.length > 0 && req.user && !req.user.roles.some((r) => roles.includes(r))) {
-            res
-                .status(403)
-                .json({ message: "Forbidden - insufficient role" });
+        if (roles.length > 0 && !req.user.roles.some((r) => roles.includes(r))) {
+            res.status(403).json({ message: "Insufficient permissions" });
             return;
         }
         // Optional: Update last login
         yield prisma.user.update({
-            where: { id: Number(session.userId) },
+            where: { id: decoded.userId },
             data: { lastLogin: new Date() },
         });
         next();
     }
-    catch (err) {
-        console.error("Auth middleware error:", err);
-        res.status(401).json({ message: "Authentication failed" });
+    catch (error) {
+        console.error("Auth middleware error:", error);
+        res.status(401).json({ message: "Invalid or expired token" });
     }
 });
 exports.requireAuth = requireAuth;

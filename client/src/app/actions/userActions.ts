@@ -1,7 +1,7 @@
 // client/src/app/actions/userActions.ts
 "use server";
 
-import { cookies } from "next/headers";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 
 interface UpdateUserProfileData {
 	name?: string;
@@ -31,11 +31,10 @@ export async function fetchUserProfile(): Promise<{
 	};
 }> {
 	try {
-		// Get the session cookie from the request
-		const cookieStore = await cookies();
-		const sessionCookie = cookieStore.get("session")?.value;
+
+		const authToken = await getAuthToken();
 		
-		if (!sessionCookie) {
+		if (!authToken) {
 			return {
 				success: false,
 				message: "Not authenticated",
@@ -49,7 +48,7 @@ export async function fetchUserProfile(): Promise<{
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				cache: "no-store",
 			}
@@ -88,11 +87,9 @@ export async function updateUserProfile(
 	user?: any;
 }> {
 	try {
-		// Get the session cookie from the request
-		const cookieStore = await cookies();
-		const sessionCookie = cookieStore.get("session")?.value;
+		const authToken = await getAuthToken();
 
-		if (!sessionCookie) {
+		if (!authToken) {
 			return {
 				success: false,
 				message: "Not authenticated",
@@ -106,7 +103,7 @@ export async function updateUserProfile(
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`,
 				},
 				body: JSON.stringify(updateData),
 			}

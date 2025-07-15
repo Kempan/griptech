@@ -85,6 +85,7 @@ model Product {
   price         Decimal? @db.Decimal(10, 2)
   rating        Float?
   stockQuantity Int?     @map("stock_quantity")
+  enableStockManagement Boolean @default(false) @map("enable_stock_management")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

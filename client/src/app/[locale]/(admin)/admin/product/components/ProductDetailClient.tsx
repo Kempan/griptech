@@ -11,6 +11,7 @@ import { Button } from "@/shadcn/components/ui/button";
 import { Input } from "@/shadcn/components/ui/input";
 import { Label } from "@/shadcn/components/ui/label";
 import { Textarea } from "@/shadcn/components/ui/textarea";
+import { Checkbox } from "@/shadcn/components/ui/checkbox";
 import {
 	Tabs,
 	TabsContent,
@@ -22,6 +23,7 @@ import { Product, ProductCategory } from "@/app/types";
 import { toast } from "sonner";
 import { formatDateDisplay } from "@/app/lib/utils/formatDate";
 import { useTranslations } from "next-intl";
+import { getStockStatusText, getStockStatusColor } from "@/app/lib/utils/stock-utils";
 
 interface ProductDetailClientProps {
 	product: Product;
@@ -45,6 +47,9 @@ export function ProductDetailClient({
 	const [price, setPrice] = useState(product.price.toString());
 	const [stockQuantity, setStockQuantity] = useState(
 		product.stockQuantity?.toString() || "0"
+	);
+	const [enableStockManagement, setEnableStockManagement] = useState(
+		product.enableStockManagement || false
 	);
 
 	// SEO fields
@@ -93,6 +98,17 @@ export function ProductDetailClient({
 	const handleStockQuantityChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			setStockQuantity(e.target.value);
+		},
+		[]
+	);
+
+	const handleStockManagementChange = useCallback(
+		(checked: boolean) => {
+			setEnableStockManagement(checked);
+			// Reset stock quantity when disabling stock management
+			if (!checked) {
+				setStockQuantity("0");
+			}
 		},
 		[]
 	);
@@ -147,6 +163,7 @@ export function ProductDetailClient({
 					slug,
 					price: parseFloat(price),
 					stockQuantity: parseInt(stockQuantity, 10),
+					enableStockManagement,
 					categoryIds: selectedCategories,
 					description,
 					shortDescription,
@@ -203,6 +220,7 @@ export function ProductDetailClient({
 		setSlug(product.slug || "");
 		setPrice(product.price.toString());
 		setStockQuantity(product.stockQuantity?.toString() || "0");
+		setEnableStockManagement(product.enableStockManagement || false);
 		setDescription(product.description || "");
 		setShortDescription(product.shortDescription || "");
 		setMetaTitle(product.metaTitle || "");
@@ -260,18 +278,21 @@ export function ProductDetailClient({
 					</div>
 
 					<div>
+						<p className="text-sm text-gray-500">Stock Management</p>
+						<p className="font-medium">
+							{product.enableStockManagement ? "Enabled" : "Disabled"}
+						</p>
+					</div>
+
+					<div>
 						<p className="text-sm text-gray-500">Stock</p>
 						<p className="font-medium">{product.stockQuantity || 0}</p>
 					</div>
 
 					<div>
 						<p className="text-sm text-gray-500">Status</p>
-						<p
-							className={`font-medium ${
-								product.stockQuantity > 0 ? "text-green-600" : "text-red-600"
-							}`}
-						>
-							{product.stockQuantity > 0 ? "In Stock" : "Out of Stock"}
+						<p className={`font-medium ${getStockStatusColor(product)}`}>
+							{getStockStatusText(product)}
 						</p>
 					</div>
 				</div>
@@ -513,15 +534,33 @@ export function ProductDetailClient({
 								</div>
 
 								<div className="mb-4">
-									<Label htmlFor="stockQuantity">{t("stockQuantity")}</Label>
-									<Input
-										id="stockQuantity"
-										type="number"
-										value={stockQuantity}
-										onChange={handleStockQuantityChange}
-										className="mt-1"
-										min="0"
-									/>
+									<div className="flex items-center space-x-2 mb-2">
+										<Checkbox
+											id="enableStockManagement"
+											checked={enableStockManagement}
+											onCheckedChange={handleStockManagementChange}
+										/>
+										<Label 
+											htmlFor="enableStockManagement"
+											className="text-sm font-medium cursor-pointer"
+										>
+											Enable Stock Management
+										</Label>
+									</div>
+									
+									{enableStockManagement && (
+										<div>
+											<Label htmlFor="stockQuantity">{t("stockQuantity")}</Label>
+											<Input
+												id="stockQuantity"
+												type="number"
+												value={stockQuantity}
+												onChange={handleStockQuantityChange}
+												className="mt-1"
+												min="0"
+											/>
+										</div>
+									)}
 								</div>
 							</div>
 						</div>

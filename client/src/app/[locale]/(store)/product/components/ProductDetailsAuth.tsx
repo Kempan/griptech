@@ -18,6 +18,7 @@ interface ProductDetailsAuthProps {
 		slug: string;
 		sizes?: string[];
 		stockQuantity?: number;
+		enableStockManagement?: boolean;
 	};
 }
 
@@ -43,6 +44,7 @@ export default async function ProductDetailsAuth({
 						slug={product.slug}
 						sizes={product.sizes}
 						stockQuantity={product.stockQuantity}
+						enableStockManagement={product.enableStockManagement}
 					/>
 				</Suspense>
 			</AuthOnly>

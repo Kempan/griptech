@@ -21,6 +21,7 @@ export interface Product {
 	price: number;
 	rating?: number;
 	stockQuantity: number;
+	enableStockManagement: boolean;
 	createdAt: string;
 	updatedAt: string;
 
@@ -44,6 +45,7 @@ export interface UpdateProductPayload {
 		slug?: string;
 		price?: number;
 		stockQuantity?: number;
+		enableStockManagement?: boolean;
 		rating?: number;
 		categoryIds?: number[];
 		description?: string;
@@ -73,6 +75,13 @@ export interface CreateProductFormData {
 	price: number;
 	stockQuantity: number;
 	rating: number;
+	enableStockManagement: boolean;
+	description?: string;
+	shortDescription?: string;
+	metaTitle?: string;
+	metaDescription?: string;
+	metaKeywords?: string;
+	categoryIds: number[];
 }
 
 // Category creation payload

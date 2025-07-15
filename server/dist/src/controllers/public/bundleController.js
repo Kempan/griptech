@@ -11,24 +11,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteBundle = exports.removeProductFromBundle = exports.addProductToBundle = exports.updateBundleItems = exports.updateBundle = exports.createBundle = exports.getBundleById = exports.getUserBundles = void 0;
 const client_1 = require("@prisma/client");
-const session_1 = require("../../lib/session");
 const prisma = new client_1.PrismaClient();
 /**
  * Get all bundles for the current user
  */
 const getUserBundles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        // Use JWT auth from middleware
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         // Get pagination parameters
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
@@ -96,17 +90,11 @@ exports.getUserBundles = getUserBundles;
  */
 const getBundleById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         // Get bundle
         const bundle = yield prisma.productBundle.findFirst({
@@ -158,17 +146,11 @@ exports.getBundleById = getBundleById;
  */
 const createBundle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const { name, description } = req.body;
         // Validate input
         if (!name || name.trim() === "") {
@@ -200,17 +182,11 @@ exports.createBundle = createBundle;
  */
 const updateBundle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         const { name, description } = req.body;
         // Check if bundle exists and belongs to user
@@ -245,17 +221,11 @@ exports.updateBundle = updateBundle;
  */
 const updateBundleItems = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         const { items } = req.body;
         // Validate input
@@ -298,17 +268,11 @@ exports.updateBundleItems = updateBundleItems;
  */
 const addProductToBundle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         const { productId, quantity = 1 } = req.body;
         // Validate input
@@ -370,17 +334,11 @@ exports.addProductToBundle = addProductToBundle;
  */
 const removeProductFromBundle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         const productId = parseInt(req.params.productId);
         // Check if bundle exists and belongs to user
@@ -415,17 +373,11 @@ exports.removeProductFromBundle = removeProductFromBundle;
  */
 const deleteBundle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = (yield (0, session_1.decrypt)(sessionCookie));
-        if (!session || !session.userId) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const bundleId = parseInt(req.params.id);
         // Check if bundle exists and belongs to user
         const bundle = yield prisma.productBundle.findFirst({

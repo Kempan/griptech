@@ -180,6 +180,9 @@
   "Shipping": "Frakt",
   "Checkout": "Kassan",
   "ClearCart": "Töm kundvagn",
+  "RemoveFromCart": "Ta bort från kundvagn",
+  "AreYouSureRemoveFromCart": "Är du säker på att du vill ta bort",
+  "Remove": "Ta bort",
   "Total": "Totalt",
   "ShoppingCart": "Kundvagn",
   "OrderSummary": "Ordersammanfattning",
@@ -422,7 +425,7 @@
   "editProduct": "Redigera produkt",
   "deleteProduct": "Ta bort produkt",
   "deleting": "Tar bort...",
-  "saving": "Sparar...",
+  "saving": "Sparar...",  
   "saveChanges": "Spara ändringar",
   "cancel": "Avbryt",
   "general": "Allmänt",
@@ -642,5 +645,8 @@
   "NoFavorites": "Inga favoriter",
   "StartAddingFavorites": "Börja lägga till favoriter till ditt konto",
   "BrowseProducts": "Till shoppen",
-  "Selected": "Valda"
+  "Selected": "Valda",
+  "BundleDeletedSuccessfully": "Paketet har tagits bort",
+  "BundleCreatedSuccessfully": "Paketet har skapats",
+  "FailedToCreateBundle": "Misslyckades med att skapa paket"
 }

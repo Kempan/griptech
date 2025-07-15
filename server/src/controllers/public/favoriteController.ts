@@ -1,7 +1,6 @@
 // server/src/controllers/public/favoriteController.ts
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { decrypt } from "../../lib/session";
 
 const prisma = new PrismaClient();
 
@@ -13,20 +12,13 @@ export const getUserFavorites = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		// Use JWT auth from middleware
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 
 		// Get pagination parameters
 		const page = parseInt(req.query.page as string) || 1;
@@ -92,20 +84,12 @@ export const addToFavorites = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const { productId } = req.body;
 
 		// Validate productId
@@ -176,20 +160,12 @@ export const removeFromFavorites = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const { productId } = req.params;
 
 		if (!productId) {
@@ -237,20 +213,12 @@ export const checkFavorites = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const { productIds } = req.body;
 
 		// Validate productIds
@@ -306,20 +274,12 @@ export const toggleFavorite = async (
 	res: Response
 ): Promise<void> => {
 	try {
-		// Get current user from session
-		const sessionCookie = req.cookies.session;
-		if (!sessionCookie) {
+		if (!req.user) {
 			res.status(401).json({ message: "Not authenticated" });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
-		if (!session?.userId) {
-			res.status(401).json({ message: "Not authenticated" });
-			return;
-		}
-
-		const userId = parseInt(session.userId.toString());
+		const userId = req.user.id;
 		const { productId } = req.body;
 
 		// Validate productId

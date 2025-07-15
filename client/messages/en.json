@@ -180,6 +180,9 @@
   "Shipping": "Shipping",
   "Checkout": "Checkout",
   "ClearCart": "Empty cart",
+  "RemoveFromCart": "Remove from cart",
+  "AreYouSureRemoveFromCart": "Are you sure you want to remove",
+  "Remove": "Remove",
   "Total": "Total",
   "ShoppingCart": "Shopping Cart",
   "OrderSummary": "Order Summary",
@@ -639,5 +642,8 @@
   "NoFavorites": "No favorites",
   "StartAddingFavorites": "Start adding favorites to your account",
   "BrowseProducts": "Browse Products",
-  "Selected": "Selected"
+  "Selected": "Selected",
+  "BundleDeletedSuccessfully": "Bundle deleted successfully",
+  "BundleCreatedSuccessfully": "Bundle created successfully",
+  "FailedToCreateBundle": "Failed to create bundle"
 }

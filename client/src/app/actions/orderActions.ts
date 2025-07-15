@@ -1,8 +1,7 @@
 // client/src/app/actions/orderActions.ts
 "use server";
 
-import { cookies } from "next/headers";
-import { getSession } from "../lib/utils/get-session";
+import { getAuthToken } from "@/app/lib/utils/get-auth-token";
 import { Order, OrderStatus } from "../types";
 
 /**
@@ -28,9 +27,11 @@ export async function createOrder(orderData: {
 			"Creating order with data:",
 			JSON.stringify({
 				...orderData,
-				items: `${orderData.items.length} items`, // Log summary instead of full items array
+				items: `${orderData.items.length} items`,
 			})
 		);
+
+		const authToken = await getAuthToken();
 
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders`,
@@ -38,8 +39,8 @@ export async function createOrder(orderData: {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${authToken}`,
 				},
-				credentials: "include",
 				body: JSON.stringify(orderData),
 			}
 		);
@@ -83,9 +84,9 @@ export async function getCustomerOrders({
 	sortOrder?: "asc" | "desc";
 }): Promise<{ orders: Order[]; totalCount: number }> {
 	try {
-		const sessionCookie = await getSession();
-		if (!sessionCookie) {
-			throw new Error("No session cookie found.");
+		const authToken = await getAuthToken();
+		if (!authToken) {
+			throw new Error("No auth token found.");
 		}
 
 		const queryParams = new URLSearchParams({
@@ -100,10 +101,11 @@ export async function getCustomerOrders({
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/user?${queryParams}`,
 			{
+				method: "GET",
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`, // Use Authorization header
 				},
 			}
 		);
@@ -130,26 +132,22 @@ export async function getCustomerOrderById(
 	orderId: string | number
 ): Promise<Order | null> {
 	try {
-		// Convert string ID to number if needed
 		const id = typeof orderId === "string" ? parseInt(orderId, 10) : orderId;
 
-		// Get the session cookie from the request
-		const cookieStore = await cookies();
-		const sessionCookie = cookieStore.get("session")?.value;
+		const authToken = await getAuthToken();
 
-		if (!sessionCookie) {
-			console.error("No session cookie found");
+		if (!authToken) {
+			console.error("No auth token found");
 			return null;
 		}
 
-		// Use the new endpoint that accepts order ID
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/${id}`,
 			{
 				cache: "no-store",
 				headers: {
 					"Content-Type": "application/json",
-					Cookie: `session=${sessionCookie}`,
+					Authorization: `Bearer ${authToken}`, // Use Authorization header
 				},
 			}
 		);

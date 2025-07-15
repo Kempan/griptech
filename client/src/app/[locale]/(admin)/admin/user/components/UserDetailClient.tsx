@@ -800,7 +800,7 @@ export function UserDetailClient({ user, locale }: UserDetailClientProps) {
 				{isEditing ? (
 					<>
 						<Button onClick={handleSave} disabled={isSubmitting}>
-							{isSubmitting ? t("Saving") : t("SaveChanges")}
+							{isSubmitting ? t("saving") : t("saveChanges")}
 						</Button>
 						<Button
 							variant="outline"

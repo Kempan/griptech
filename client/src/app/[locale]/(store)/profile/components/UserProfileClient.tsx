@@ -838,7 +838,7 @@ export default function UserProfileClient({ locale }: UserProfileClientProps) {
 				{isEditing ? (
 					<>
 						<Button onClick={handleSave} disabled={isSaving}>
-							{isSaving ? t("Saving") : t("SaveChanges")}
+							{isSaving ? t("saving") : t("saveChanges")}
 						</Button>
 						<Button
 							variant="outline"

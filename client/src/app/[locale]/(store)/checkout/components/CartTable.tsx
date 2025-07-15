@@ -6,12 +6,16 @@ import { useCart } from "@/app/state/cartHooks";
 import { useTranslations } from "next-intl";
 
 const CartTable = () => {
-	const { cart, updateItemQuantity } = useCart();
+	const { cart, updateItemQuantity, removeItemFromCart } = useCart();
 	const t = useTranslations();
 
 	const handleQuantityChange = (itemId: string, quantity: number) => {
 		if (quantity < 1) return;
 		updateItemQuantity(itemId, quantity);
+	};
+
+	const handleRemoveItem = (itemId: string) => {
+		removeItemFromCart(itemId);
 	};
 
 	return (
@@ -30,6 +34,7 @@ const CartTable = () => {
 						key={item.cartItemId || `${item.productId}-${item.size}`}
 						item={item}
 						handleQuantityChange={handleQuantityChange}
+						onRemove={handleRemoveItem}
 					/>
 				))}
 			</tbody>

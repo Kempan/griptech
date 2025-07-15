@@ -2,12 +2,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Package } from "lucide-react";
 import { Button } from "@/shadcn/components/ui/button";
 import { Product } from "@/app/types";
+import { isOutOfStock, hasLowStock, getStockStatusColor, getStockDisplayText } from "@/app/lib/utils/stock-utils";
 
 export const createColumns = (
-	t: (key: string) => string
+	t: (key: string) => string,
+	onStockManage?: (product: Product) => void
 ): ColumnDef<Product>[] => [
 	{
 		accessorKey: "id",
@@ -61,8 +63,53 @@ export const createColumns = (
 			</Button>
 		),
 		cell: ({ row }) => {
-			const stock = row.getValue("stockQuantity") as number | null;
-			return <span>{stock ?? "N/A"}</span>;
+			const product = row.original;
+			
+			// If stock management is disabled, show appropriate message
+			if (!product.enableStockManagement) {
+				return (
+					<div className="flex items-center gap-2">
+						<span className="text-gray-500">Stock management disabled</span>
+						{onStockManage && (
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={(e) => {
+									e.stopPropagation();
+									onStockManage(product);
+								}}
+								className="h-6 w-6 p-0"
+							>
+								<Package className="h-3 w-3" />
+							</Button>
+						)}
+					</div>
+				);
+			}
+			
+			const stockClass = getStockStatusColor(product);
+			const displayText = getStockDisplayText(product);
+			
+			return (
+				<div className="flex items-center gap-2">
+					<span className={stockClass}>
+						{displayText}
+					</span>
+					{onStockManage && (
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={(e) => {
+								e.stopPropagation();
+								onStockManage(product);
+							}}
+							className="h-6 w-6 p-0"
+						>
+							<Package className="h-3 w-3" />
+						</Button>
+					)}
+				</div>
+			);
 		},
 	},
 ];

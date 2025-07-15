@@ -1,4 +1,4 @@
-// client/src/app/[locale]/(store)/favorites/components/BundlesHeader.tsx
+// client/src/app/[locale]/(store)/favorite-bundles/components/BundlesHeader.tsx
 "use client";
 
 import { useState } from "react";
@@ -17,11 +17,10 @@ import { Input } from "@/shadcn/components/ui/input";
 import { Label } from "@/shadcn/components/ui/label";
 import { Textarea } from "@/shadcn/components/ui/textarea";
 import { createBundle } from "@/app/actions/bundleActions";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function BundlesHeader() {
 	const t = useTranslations();
-	const router = useRouter();
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
 	const [bundleName, setBundleName] = useState("");
@@ -41,10 +40,14 @@ export default function BundlesHeader() {
 				setShowCreateDialog(false);
 				setBundleName("");
 				setBundleDescription("");
-				router.refresh();
+				toast.success(t("BundleCreatedSuccessfully"));
+				// No need to manually refresh - revalidatePath handles it
+			} else {
+				toast.error(result.message || t("FailedToCreateBundle"));
 			}
 		} catch (error) {
 			console.error("Error creating bundle:", error);
+			toast.error(t("FailedToCreateBundle"));
 		} finally {
 			setIsCreating(false);
 		}

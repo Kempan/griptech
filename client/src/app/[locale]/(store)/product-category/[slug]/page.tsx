@@ -75,7 +75,7 @@ export default async function CategoryPage({
 				topLevelCategoryData={topLevelCategory}
 				allCategories={allCategories}
 			>
-				<SectionWrapper className="p-3 md:p-6">
+				<SectionWrapper className="py-4 px-4">
 					<ServerHeader text={category?.name} />
 
 					{/* Display category description if available */}

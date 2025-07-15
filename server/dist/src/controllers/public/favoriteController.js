@@ -11,25 +11,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProductFavoriteCount = exports.toggleFavorite = exports.checkFavorites = exports.removeFromFavorites = exports.addToFavorites = exports.getUserFavorites = void 0;
 const client_1 = require("@prisma/client");
-const session_1 = require("../../lib/session");
 const prisma = new client_1.PrismaClient();
 /**
  * Get all favorites for the current user
  */
 const getUserFavorites = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        // Use JWT auth from middleware
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         // Get pagination parameters
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 12;
@@ -84,18 +77,11 @@ exports.getUserFavorites = getUserFavorites;
  */
 const addToFavorites = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const { productId } = req.body;
         // Validate productId
         if (!productId) {
@@ -154,18 +140,11 @@ exports.addToFavorites = addToFavorites;
  */
 const removeFromFavorites = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const { productId } = req.params;
         if (!productId) {
             res.status(400).json({ message: "Product ID is required" });
@@ -206,18 +185,11 @@ exports.removeFromFavorites = removeFromFavorites;
  */
 const checkFavorites = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const { productIds } = req.body;
         // Validate productIds
         if (!Array.isArray(productIds) || productIds.length === 0) {
@@ -264,18 +236,11 @@ exports.checkFavorites = checkFavorites;
  */
 const toggleFavorite = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get current user from session
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        if (!req.user) {
             res.status(401).json({ message: "Not authenticated" });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!(session === null || session === void 0 ? void 0 : session.userId)) {
-            res.status(401).json({ message: "Not authenticated" });
-            return;
-        }
-        const userId = parseInt(session.userId.toString());
+        const userId = req.user.id;
         const { productId } = req.body;
         // Validate productId
         if (!productId) {

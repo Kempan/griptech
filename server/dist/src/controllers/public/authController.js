@@ -14,76 +14,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logoutUser = exports.getSession = exports.loginUser = void 0;
 const client_1 = require("@prisma/client");
-const session_1 = require("../../lib/session");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jwt_1 = require("../../lib/jwt");
 const prisma = new client_1.PrismaClient();
-// Helper function to get cookie settings based on environment
-const getCookieSettings = () => {
-    const isProduction = process.env.NODE_ENV === "production";
-    if (isProduction) {
-        // Production settings (for API Gateway/AWS)
-        return {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
-        };
-    }
-    else {
-        // Development settings (for localhost)
-        return {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
-        };
-    }
-};
-/**
- * Handle user login
- * Validates credentials and creates a session
- */
 const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("🔵 Login attempt for:", req.body.email);
     try {
         const { email, password } = req.body;
-        // Validate inputs
         if (!email || !password) {
+            console.log("🔴 Missing email or password");
             res.status(400).json({ message: "Email and password are required" });
             return;
         }
-        // Find user by email
-        const user = yield prisma.user.findUnique({
-            where: { email },
-        });
-        // User not found or password mismatch
+        const user = yield prisma.user.findUnique({ where: { email } });
         if (!user) {
+            console.log("🔴 User not found:", email);
             res.status(401).json({ message: "Invalid email or password" });
             return;
         }
-        // For development with plaintext passwords (replace with bcrypt in production)
-        // const passwordMatches = user.password === password;
-        // Uncomment this for production with bcrypt hashed passwords
         if (!user.password) {
+            console.log("🔴 User has no password:", email);
             res.status(401).json({ message: "Invalid email or password" });
             return;
         }
         const passwordMatches = yield bcrypt_1.default.compare(password, user.password);
         if (!passwordMatches) {
+            console.log("🔴 Password mismatch for:", email);
             res.status(401).json({ message: "Invalid email or password" });
             return;
         }
-        // Create session token with user id and roles
-        const session = yield (0, session_1.encrypt)({
-            userId: user.id.toString(),
+        // Create JWT token
+        const token = (0, jwt_1.signJWT)({
+            userId: user.id,
+            email: user.email,
             roles: user.roles || [],
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
-        // Environment-aware cookie settings
-        const cookieSettings = getCookieSettings();
-        res.cookie("session", session, cookieSettings);
-        // Send successful response with user info (excluding password)
+        // Set httpOnly cookie
+        const cookieSettings = (0, jwt_1.getCookieSettings)();
+        res.cookie("auth-token", token, cookieSettings);
+        console.log("🟢 Login successful for:", user.email);
         res.status(200).json({
             message: "Login successful",
             user: {
@@ -95,60 +64,54 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (error) {
-        console.error("Login failed:", error);
+        console.error("🔴 Login failed:", error);
         res.status(500).json({ message: "Login failed" });
     }
 });
 exports.loginUser = loginUser;
-/**
- * Get current session information
- */
 const getSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const sessionCookie = req.cookies.session;
-        if (!sessionCookie) {
+        // Accept token from EITHER cookie OR Authorization header
+        const token = req.cookies["auth-token"] ||
+            ((_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", ""));
+        if (!token) {
             res.status(200).json({ isLoggedIn: false });
             return;
         }
-        const session = yield (0, session_1.decrypt)(sessionCookie);
-        if (!session || !session.userId) {
-            res.status(200).json({ isLoggedIn: false });
-            return;
+        try {
+            const decoded = (0, jwt_1.verifyJWT)(token);
+            // Get fresh user data from database
+            const user = yield prisma.user.findUnique({
+                where: { id: decoded.userId },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    roles: true,
+                },
+            });
+            if (!user) {
+                // User no longer exists
+                const cookieSettings = (0, jwt_1.getCookieSettings)();
+                res.clearCookie("auth-token", cookieSettings);
+                res.status(200).json({ isLoggedIn: false });
+                return;
+            }
+            res.status(200).json({
+                isLoggedIn: true,
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                roles: user.roles || [],
+            });
         }
-        // Check if session is expired
-        if (session.expiresAt &&
-            typeof session.expiresAt === "string" &&
-            new Date(session.expiresAt) < new Date()) {
-            const cookieSettings = getCookieSettings();
-            res.clearCookie("session", cookieSettings);
+        catch (jwtError) {
+            // Invalid or expired token
+            const cookieSettings = (0, jwt_1.getCookieSettings)();
+            res.clearCookie("auth-token", cookieSettings);
             res.status(200).json({ isLoggedIn: false });
-            return;
         }
-        // Get updated user information from database
-        const user = yield prisma.user.findUnique({
-            where: { id: parseInt(session.userId.toString()) },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                roles: true,
-            },
-        });
-        if (!user) {
-            // User no longer exists in database
-            const cookieSettings = getCookieSettings();
-            res.clearCookie("session", cookieSettings);
-            res.status(200).json({ isLoggedIn: false });
-            return;
-        }
-        // Return session information including user roles
-        res.status(200).json({
-            isLoggedIn: true,
-            userId: user.id,
-            name: user.name,
-            email: user.email,
-            roles: user.roles || [],
-        });
     }
     catch (error) {
         console.error("Session verification failed:", error);
@@ -156,13 +119,10 @@ const getSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getSession = getSession;
-/**
- * Log out user by clearing session cookie
- */
 const logoutUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const cookieSettings = getCookieSettings();
-        res.clearCookie("session", cookieSettings);
+        const cookieSettings = (0, jwt_1.getCookieSettings)();
+        res.clearCookie("auth-token", cookieSettings);
         res.status(200).json({ message: "Logged out successfully" });
     }
     catch (error) {

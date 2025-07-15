@@ -6,7 +6,7 @@ import { getUserBundles } from "@/app/actions/bundleActions";
 import BundleCard from "./BundleCard";
 import { ProductBundle } from "@/app/actions/bundleActions";
 import { useTranslations } from "next-intl";
-import { Package, Plus } from "lucide-react";
+import { Package } from "lucide-react";
 import { Button } from "@/shadcn/components/ui/button";
 import { Skeleton } from "@/shadcn/components/ui/skeleton";
 
@@ -34,10 +34,6 @@ export default function BundlesList() {
 		loadBundles();
 	}, [loadBundles]);
 
-	const handleDeleteBundle = (bundleId: number) => {
-		setBundles(bundles.filter((bundle) => bundle.id !== bundleId));
-	};
-
 	if (loading) {
 		return <BundlesListSkeleton />;
 	}
@@ -56,11 +52,7 @@ export default function BundlesList() {
 		<>
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{bundles.map((bundle) => (
-					<BundleCard
-						key={bundle.id}
-						bundle={bundle}
-						onDelete={handleDeleteBundle}
-					/>
+					<BundleCard key={bundle.id} bundle={bundle} />
 				))}
 			</div>
 

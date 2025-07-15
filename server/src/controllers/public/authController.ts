@@ -1,87 +1,57 @@
 // server/src/controllers/public/authController.ts
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { encrypt, decrypt } from "../../lib/session";
 import bcrypt from "bcrypt";
+import { signJWT, verifyJWT, getCookieSettings } from "../../lib/jwt";
+
 const prisma = new PrismaClient();
 
-// Helper function to get cookie settings based on environment
-const getCookieSettings = () => {
-	const isProduction = process.env.NODE_ENV === "production";
-
-	if (isProduction) {
-		// Production settings (for API Gateway/AWS)
-		return {
-			httpOnly: true,
-			secure: true,
-			sameSite: "none" as const,
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			path: "/",
-		};
-	} else {
-		// Development settings (for localhost)
-		return {
-			httpOnly: true,
-			secure: false,
-			sameSite: "lax" as const,
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-			path: "/",
-		};
-	}
-};
-
-/**
- * Handle user login
- * Validates credentials and creates a session
- */
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
+	console.log("🔵 Login attempt for:", req.body.email);
+
 	try {
 		const { email, password } = req.body;
 
-		// Validate inputs
 		if (!email || !password) {
+			console.log("🔴 Missing email or password");
 			res.status(400).json({ message: "Email and password are required" });
 			return;
 		}
 
-		// Find user by email
-		const user = await prisma.user.findUnique({
-			where: { email },
-		});
+		const user = await prisma.user.findUnique({ where: { email } });
 
-		// User not found or password mismatch
 		if (!user) {
+			console.log("🔴 User not found:", email);
 			res.status(401).json({ message: "Invalid email or password" });
 			return;
 		}
 
-		// For development with plaintext passwords (replace with bcrypt in production)
-		// const passwordMatches = user.password === password;
-
-		// Uncomment this for production with bcrypt hashed passwords
 		if (!user.password) {
+			console.log("🔴 User has no password:", email);
 			res.status(401).json({ message: "Invalid email or password" });
 			return;
 		}
+
 		const passwordMatches = await bcrypt.compare(password, user.password);
 
 		if (!passwordMatches) {
+			console.log("🔴 Password mismatch for:", email);
 			res.status(401).json({ message: "Invalid email or password" });
 			return;
 		}
 
-		// Create session token with user id and roles
-		const session = await encrypt({
-			userId: user.id.toString(),
+		// Create JWT token
+		const token = signJWT({
+			userId: user.id,
+			email: user.email,
 			roles: user.roles || [],
-			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		});
 
-		// Environment-aware cookie settings
+		// Set httpOnly cookie
 		const cookieSettings = getCookieSettings();
-		res.cookie("session", session, cookieSettings);
+		res.cookie("auth-token", token, cookieSettings);
 
-		// Send successful response with user info (excluding password)
+		console.log("🟢 Login successful for:", user.email);
 		res.status(200).json({
 			message: "Login successful",
 			user: {
@@ -92,88 +62,74 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 			},
 		});
 	} catch (error) {
-		console.error("Login failed:", error);
+		console.error("🔴 Login failed:", error);
 		res.status(500).json({ message: "Login failed" });
 	}
 };
 
-/**
- * Get current session information
- */
 export const getSession = async (
 	req: Request,
 	res: Response
 ): Promise<void> => {
 	try {
-		const sessionCookie = req.cookies.session;
+		// Accept token from EITHER cookie OR Authorization header
+		const token =
+			req.cookies["auth-token"] ||
+			req.headers.authorization?.replace("Bearer ", "");
 
-		if (!sessionCookie) {
+		if (!token) {
 			res.status(200).json({ isLoggedIn: false });
 			return;
 		}
 
-		const session = await decrypt(sessionCookie);
+		try {
+			const decoded = verifyJWT(token);
 
-		if (!session || !session.userId) {
-			res.status(200).json({ isLoggedIn: false });
-			return;
-		}
+			// Get fresh user data from database
+			const user = await prisma.user.findUnique({
+				where: { id: decoded.userId },
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					roles: true,
+				},
+			});
 
-		// Check if session is expired
-		if (
-			session.expiresAt &&
-			typeof session.expiresAt === "string" &&
-			new Date(session.expiresAt) < new Date()
-		) {
+			if (!user) {
+				// User no longer exists
+				const cookieSettings = getCookieSettings();
+				res.clearCookie("auth-token", cookieSettings);
+				res.status(200).json({ isLoggedIn: false });
+				return;
+			}
+
+			res.status(200).json({
+				isLoggedIn: true,
+				userId: user.id,
+				name: user.name,
+				email: user.email,
+				roles: user.roles || [],
+			});
+		} catch (jwtError) {
+			// Invalid or expired token
 			const cookieSettings = getCookieSettings();
-			res.clearCookie("session", cookieSettings);
+			res.clearCookie("auth-token", cookieSettings);
 			res.status(200).json({ isLoggedIn: false });
-			return;
 		}
-
-		// Get updated user information from database
-		const user = await prisma.user.findUnique({
-			where: { id: parseInt(session.userId.toString()) },
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				roles: true,
-			},
-		});
-
-		if (!user) {
-			// User no longer exists in database
-			const cookieSettings = getCookieSettings();
-			res.clearCookie("session", cookieSettings);
-			res.status(200).json({ isLoggedIn: false });
-			return;
-		}
-
-		// Return session information including user roles
-		res.status(200).json({
-			isLoggedIn: true,
-			userId: user.id,
-			name: user.name,
-			email: user.email,
-			roles: user.roles || [],
-		});
 	} catch (error) {
 		console.error("Session verification failed:", error);
 		res.status(200).json({ isLoggedIn: false });
 	}
 };
 
-/**
- * Log out user by clearing session cookie
- */
 export const logoutUser = async (
 	req: Request,
 	res: Response
 ): Promise<void> => {
 	try {
 		const cookieSettings = getCookieSettings();
-		res.clearCookie("session", cookieSettings);
+		res.clearCookie("auth-token", cookieSettings);
 		res.status(200).json({ message: "Logged out successfully" });
 	} catch (error) {
 		console.error("Logout failed:", error);
