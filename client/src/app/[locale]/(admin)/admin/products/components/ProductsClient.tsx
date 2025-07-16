@@ -45,6 +45,8 @@ export default function ProductsClient({
 		console.log(`✅ Product with ID ${id} deleted`);
 	};
 
+	console.log("🔵 Products:", products);
+
 	return (
 		<div className="flex flex-col gap-4">
 			<CreateProduct onProductCreated={handleProductCreated} />

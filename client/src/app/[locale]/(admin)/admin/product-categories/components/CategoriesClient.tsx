@@ -47,6 +47,8 @@ export default function CategoriesClient({
 		console.log(`✅ Category with ID ${id} deleted`);
 	};
 
+	console.log("🔵 Categories:", categories);
+
 	return (
 		<div className="flex flex-col gap-4">
 			<CreateCategory
