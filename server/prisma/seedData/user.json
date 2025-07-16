@@ -2,16 +2,61 @@
   {
     "name": "Joakim",
     "email": "joakim@tundran.se",
-    "roles": ["admin"], 
+    "roles": ["admin"],
     "password": "admin",
+    "phone": "+46701234567",
+    "shippingAddress": {
+      "street": "Admin Street 123",
+      "city": "Stockholm",
+      "postalCode": "12345",
+      "country": "Sweden"
+    },
+    "billingAddress": {
+      "street": "Admin Street 123",
+      "city": "Stockholm",
+      "postalCode": "12345",
+      "country": "Sweden"
+    },
+    "lastLogin": "2025-01-16T12:00:00.000Z",
     "createdAt": "2025-03-02T00:00:00.000Z",
     "updatedAt": "2025-03-02T00:00:00.000Z"
   },
   {
     "name": "Joakim - Customer",
     "email": "joakim@customer.se",
-    "roles": ["customer"], 
+    "roles": ["customer"],
     "password": "customer",
+    "phone": "+46709876543",
+    "shippingAddress": {
+      "street": "Customer Avenue 456",
+      "city": "Gothenburg",
+      "postalCode": "54321",
+      "country": "Sweden"
+    },
+    "billingAddress": {
+      "street": "Customer Avenue 456",
+      "city": "Gothenburg",
+      "postalCode": "54321",
+      "country": "Sweden"
+    },
+    "lastLogin": "2025-01-15T10:30:00.000Z",
+    "createdAt": "2025-03-02T00:00:00.000Z",
+    "updatedAt": "2025-03-02T00:00:00.000Z"
+  },
+  {
+    "name": "Test Customer",
+    "email": "test@customer.se",
+    "roles": ["customer"],
+    "password": "test123",
+    "phone": "+46705556677",
+    "shippingAddress": {
+      "street": "Test Street 789",
+      "city": "Malmö",
+      "postalCode": "98765",
+      "country": "Sweden"
+    },
+    "billingAddress": null,
+    "lastLogin": "2025-01-14T15:45:00.000Z",
     "createdAt": "2025-03-02T00:00:00.000Z",
     "updatedAt": "2025-03-02T00:00:00.000Z"
   }

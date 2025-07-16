@@ -2,36 +2,64 @@
   {
     "name": "Canvas",
     "slug": "canvas",
+    "description": "High-quality canvas prints and artwork for your home decoration",
+    "metaTitle": "Canvas Prints & Artwork - Griptech",
+    "metaDescription": "Discover our collection of beautiful canvas prints and artwork. Perfect for home decoration and wall art.",
+    "metaKeywords": "canvas prints, artwork, home decoration, wall art, canvas art",
     "parentId": null
   },
   {
     "name": "Posters",
     "slug": "posters",
+    "description": "Vibrant posters and prints for every style and preference",
+    "metaTitle": "Posters & Prints - Griptech",
+    "metaDescription": "Explore our collection of vibrant posters and prints. From nature to space, find the perfect piece for your space.",
+    "metaKeywords": "posters, prints, wall art, home decoration, posters for sale",
     "parentId": null
   },
   {
     "name": "Animals",
     "slug": "canvas-animals",
+    "description": "Beautiful animal-themed canvas prints and artwork",
+    "metaTitle": "Animal Canvas Prints - Griptech",
+    "metaDescription": "Stunning animal-themed canvas prints and artwork. Perfect for wildlife enthusiasts and nature lovers.",
+    "metaKeywords": "animal art, wildlife canvas, nature prints, animal posters",
     "parentId": "canvas"
   },
   {
     "name": "Space",
     "slug": "canvas-space",
+    "description": "Cosmic and space-themed canvas artwork and prints",
+    "metaTitle": "Space Canvas Art - Griptech",
+    "metaDescription": "Breathtaking space-themed canvas artwork and prints. Perfect for astronomy enthusiasts and modern decor.",
+    "metaKeywords": "space art, cosmic canvas, astronomy prints, galaxy art",
     "parentId": "canvas"
   },
   {
     "name": "Planets",
     "slug": "canvas-space-planets",
+    "description": "Detailed planet and solar system canvas prints",
+    "metaTitle": "Planet Canvas Prints - Griptech",
+    "metaDescription": "High-quality canvas prints featuring planets and solar system objects. Perfect for space and astronomy lovers.",
+    "metaKeywords": "planet art, solar system, astronomy canvas, space prints",
     "parentId": "canvas-space"
   },
   {
     "name": "Animals",
     "slug": "posters-animals",
+    "description": "Wildlife and animal posters for nature enthusiasts",
+    "metaTitle": "Animal Posters - Griptech",
+    "metaDescription": "Beautiful animal and wildlife posters. Perfect for nature lovers and animal enthusiasts.",
+    "metaKeywords": "animal posters, wildlife art, nature prints, animal wall art",
     "parentId": "posters"
   },
   {
     "name": "Space",
     "slug": "posters-space",
+    "description": "Space and cosmic themed posters and prints",
+    "metaTitle": "Space Posters - Griptech",
+    "metaDescription": "Stunning space and cosmic themed posters. Perfect for astronomy enthusiasts and modern home decoration.",
+    "metaKeywords": "space posters, cosmic art, astronomy prints, galaxy posters",
     "parentId": "posters"
   }
 ]

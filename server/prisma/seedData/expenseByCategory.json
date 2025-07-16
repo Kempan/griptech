@@ -1,7 +1,42 @@
 [
   {
-    "date": "2023-11-23T11:54:21Z",
+    "date": "2025-01-15T23:59:59.000Z",
     "category": "Canvas",
-    "amount": 48
+    "amount": 1489153.50
+  },
+  {
+    "date": "2025-01-15T23:59:59.000Z",
+    "category": "Posters",
+    "amount": 892456.75
+  },
+  {
+    "date": "2025-01-15T23:59:59.000Z",
+    "category": "Printing",
+    "amount": 234567.25
+  },
+  {
+    "date": "2025-01-15T23:59:59.000Z",
+    "category": "Shipping",
+    "amount": 156789.00
+  },
+  {
+    "date": "2025-01-15T23:59:59.000Z",
+    "category": "Marketing",
+    "amount": 345678.90
+  },
+  {
+    "date": "2025-01-14T23:59:59.000Z",
+    "category": "Canvas",
+    "amount": 1356789.25
+  },
+  {
+    "date": "2025-01-14T23:59:59.000Z",
+    "category": "Posters",
+    "amount": 678901.50
+  },
+  {
+    "date": "2025-01-14T23:59:59.000Z",
+    "category": "Office Supplies",
+    "amount": 45678.75
   }
 ]

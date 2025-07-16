@@ -1,7 +1,27 @@
 [
   {
-    "totalPurchased": 7599849.58,
-    "changePercentage": -50.31,
-    "date": "2023-05-27T05:20:14Z"
+    "totalPurchased": 759984.58,
+    "changePercentage": -12.45,
+    "date": "2025-01-15T23:59:59.000Z"
+  },
+  {
+    "totalPurchased": 867234.90,
+    "changePercentage": 18.75,
+    "date": "2025-01-14T23:59:59.000Z"
+  },
+  {
+    "totalPurchased": 730456.25,
+    "changePercentage": -8.30,
+    "date": "2025-01-13T23:59:59.000Z"
+  },
+  {
+    "totalPurchased": 796789.45,
+    "changePercentage": 12.60,
+    "date": "2025-01-12T23:59:59.000Z"
+  },
+  {
+    "totalPurchased": 707234.67,
+    "changePercentage": -5.15,
+    "date": "2025-01-11T23:59:59.000Z"
   }
 ]

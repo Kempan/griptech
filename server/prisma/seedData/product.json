@@ -2,9 +2,15 @@
   {
     "name": "Pinkscale Blazing Star",
     "slug": "pinkscale-blazing-star",
-    "price": 500,
+    "price": 500.00,
     "rating": 2.25,
     "stockQuantity": 124834,
+    "enableStockManagement": true,
+    "description": "A beautiful canvas print featuring the stunning Pinkscale Blazing Star flower. Perfect for adding natural beauty to any room.",
+    "shortDescription": "Stunning canvas print of Pinkscale Blazing Star flower",
+    "metaTitle": "Pinkscale Blazing Star Canvas Print - Griptech",
+    "metaDescription": "High-quality canvas print featuring the beautiful Pinkscale Blazing Star flower. Perfect for home decoration.",
+    "metaKeywords": "canvas print, flower art, blazing star, home decoration, wall art",
     "categoryIds": ["canvas", "canvas-animals"]
   },
   {
@@ -13,6 +19,12 @@
     "price": 899.05,
     "rating": 3.56,
     "stockQuantity": 799402,
+    "enableStockManagement": true,
+    "description": "Elegant canvas artwork showcasing the delicate Gila Milkvetch plant. A perfect addition to any nature lover's collection.",
+    "shortDescription": "Elegant canvas artwork of Gila Milkvetch plant",
+    "metaTitle": "Gila Milkvetch Canvas Art - Griptech",
+    "metaDescription": "Beautiful canvas artwork featuring the Gila Milkvetch plant. Ideal for nature enthusiasts and home decor.",
+    "metaKeywords": "canvas art, milkvetch, nature art, home decor, botanical print",
     "categoryIds": ["canvas"]
   },
   {
@@ -21,6 +33,12 @@
     "price": 264.37,
     "rating": 3.23,
     "stockQuantity": 842192,
+    "enableStockManagement": false,
+    "description": "Vibrant poster featuring the colorful Rocky Mountain Zinnia. Perfect for adding a splash of color to any space.",
+    "shortDescription": "Vibrant poster of Rocky Mountain Zinnia flowers",
+    "metaTitle": "Rocky Mountain Zinnia Poster - Griptech",
+    "metaDescription": "Colorful poster featuring Rocky Mountain Zinnia flowers. Great for brightening up any room.",
+    "metaKeywords": "poster, zinnia, flowers, colorful, wall art, space decor",
     "categoryIds": ["posters", "posters-space"]
   },
   {
@@ -29,6 +47,12 @@
     "price": 555.93,
     "rating": 4.09,
     "stockQuantity": 236333,
+    "enableStockManagement": true,
+    "description": "Stunning poster showcasing the beautiful Guadalupe Suncup flower. A must-have for flower enthusiasts.",
+    "shortDescription": "Beautiful poster of Guadalupe Suncup flower",
+    "metaTitle": "Guadalupe Suncup Poster - Griptech",
+    "metaDescription": "Gorgeous poster featuring the Guadalupe Suncup flower. Perfect for flower lovers and home decoration.",
+    "metaKeywords": "poster, suncup, flower art, home decoration, wall art",
     "categoryIds": ["posters"]
   },
   {
@@ -37,6 +61,12 @@
     "price": 82.62,
     "rating": 4.8,
     "stockQuantity": 601208,
+    "enableStockManagement": false,
+    "description": "Delicate canvas print featuring the beautiful Saline Phlox. A perfect gift for nature lovers.",
+    "shortDescription": "Delicate canvas print of Saline Phlox",
+    "metaTitle": "Saline Phlox Canvas Print - Griptech",
+    "metaDescription": "Beautiful canvas print featuring Saline Phlox flowers. Ideal for nature lovers and home decoration.",
+    "metaKeywords": "canvas print, phlox, flower art, nature, home decor",
     "categoryIds": []
   },
   {
@@ -45,6 +75,68 @@
     "price": 435.44,
     "rating": 0.27,
     "stockQuantity": 124068,
+    "enableStockManagement": true,
+    "description": "Unique canvas artwork featuring the Common Brighteyes flower. A distinctive piece for any art collection.",
+    "shortDescription": "Unique canvas artwork of Common Brighteyes flower",
+    "metaTitle": "Common Brighteyes Canvas Art - Griptech",
+    "metaDescription": "Distinctive canvas artwork featuring Common Brighteyes flowers. Perfect for art collectors and nature enthusiasts.",
+    "metaKeywords": "canvas art, brighteyes, unique art, flower print, home decoration",
     "categoryIds": []
+  },
+  {
+    "name": "Cosmic Nebula",
+    "slug": "cosmic-nebula",
+    "price": 750.00,
+    "rating": 4.95,
+    "stockQuantity": 50000,
+    "enableStockManagement": true,
+    "description": "Breathtaking space-themed canvas featuring a vibrant cosmic nebula. Perfect for astronomy enthusiasts and modern decor.",
+    "shortDescription": "Breathtaking cosmic nebula canvas print",
+    "metaTitle": "Cosmic Nebula Canvas Print - Griptech",
+    "metaDescription": "Stunning canvas print featuring a vibrant cosmic nebula. Perfect for space enthusiasts and modern home decoration.",
+    "metaKeywords": "space art, nebula, cosmic, astronomy, canvas print, modern decor",
+    "categoryIds": ["canvas", "canvas-space"]
+  },
+  {
+    "name": "Jupiter Planet",
+    "slug": "jupiter-planet",
+    "price": 650.00,
+    "rating": 4.7,
+    "stockQuantity": 75000,
+    "enableStockManagement": true,
+    "description": "Detailed canvas print of Jupiter, the largest planet in our solar system. A stunning piece for space lovers.",
+    "shortDescription": "Detailed Jupiter planet canvas print",
+    "metaTitle": "Jupiter Planet Canvas Print - Griptech",
+    "metaDescription": "High-quality canvas print featuring Jupiter, the largest planet in our solar system. Perfect for space enthusiasts.",
+    "metaKeywords": "jupiter, planet, space art, solar system, canvas print, astronomy",
+    "categoryIds": ["canvas", "canvas-space", "canvas-space-planets"]
+  },
+  {
+    "name": "Wild Lion",
+    "slug": "wild-lion",
+    "price": 450.00,
+    "rating": 4.6,
+    "stockQuantity": 100000,
+    "enableStockManagement": false,
+    "description": "Majestic lion poster capturing the power and beauty of this magnificent animal. Perfect for animal lovers.",
+    "shortDescription": "Majestic lion poster for animal lovers",
+    "metaTitle": "Wild Lion Poster - Griptech",
+    "metaDescription": "Beautiful poster featuring a majestic lion. Perfect for animal lovers and wildlife enthusiasts.",
+    "metaKeywords": "lion, wildlife, animal poster, nature art, wall decoration",
+    "categoryIds": ["posters", "posters-animals"]
+  },
+  {
+    "name": "Galaxy Cluster",
+    "slug": "galaxy-cluster",
+    "price": 850.00,
+    "rating": 4.9,
+    "stockQuantity": 30000,
+    "enableStockManagement": true,
+    "description": "Spectacular canvas artwork featuring a distant galaxy cluster. A mesmerizing piece for space and astronomy enthusiasts.",
+    "shortDescription": "Spectacular galaxy cluster canvas artwork",
+    "metaTitle": "Galaxy Cluster Canvas Art - Griptech",
+    "metaDescription": "Breathtaking canvas artwork featuring a distant galaxy cluster. Perfect for space enthusiasts and modern home decoration.",
+    "metaKeywords": "galaxy, space art, astronomy, canvas art, modern decor, cosmic",
+    "categoryIds": ["canvas", "canvas-space"]
   }
 ]

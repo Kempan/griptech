@@ -1,7 +1,42 @@
 [
   {
     "category": "Canvas",
-    "amount": 1489153.5,
-    "timestamp": "2022-08-27T18:35:57Z"
+    "amount": 1489153.50,
+    "timestamp": "2025-01-15T10:30:00.000Z"
+  },
+  {
+    "category": "Posters",
+    "amount": 892456.75,
+    "timestamp": "2025-01-14T14:20:00.000Z"
+  },
+  {
+    "category": "Printing",
+    "amount": 234567.25,
+    "timestamp": "2025-01-13T09:15:00.000Z"
+  },
+  {
+    "category": "Shipping",
+    "amount": 156789.00,
+    "timestamp": "2025-01-12T16:45:00.000Z"
+  },
+  {
+    "category": "Marketing",
+    "amount": 345678.90,
+    "timestamp": "2025-01-11T11:30:00.000Z"
+  },
+  {
+    "category": "Office Supplies",
+    "amount": 45678.50,
+    "timestamp": "2025-01-10T08:20:00.000Z"
+  },
+  {
+    "category": "Canvas",
+    "amount": 1234567.80,
+    "timestamp": "2025-01-09T13:10:00.000Z"
+  },
+  {
+    "category": "Posters",
+    "amount": 678901.25,
+    "timestamp": "2025-01-08T15:30:00.000Z"
   }
 ]

@@ -1,9 +1,58 @@
 [
   {
     "productId": "rocky-mountain-zinnia",
-    "timestamp": "2023-11-02T04:03:00Z",
-    "quantity": 229,
-    "unitPrice": 221.1,
-    "totalAmount": 8012.55
+    "timestamp": "2025-01-15T14:30:00.000Z",
+    "quantity": 25,
+    "unitPrice": 264.37,
+    "totalAmount": 6609.25
+  },
+  {
+    "productId": "pinkscale-blazing-star",
+    "timestamp": "2025-01-15T12:15:00.000Z",
+    "quantity": 15,
+    "unitPrice": 500.00,
+    "totalAmount": 7500.00
+  },
+  {
+    "productId": "gila-milkvetch",
+    "timestamp": "2025-01-14T16:45:00.000Z",
+    "quantity": 8,
+    "unitPrice": 899.05,
+    "totalAmount": 7192.40
+  },
+  {
+    "productId": "cosmic-nebula",
+    "timestamp": "2025-01-14T10:20:00.000Z",
+    "quantity": 12,
+    "unitPrice": 750.00,
+    "totalAmount": 9000.00
+  },
+  {
+    "productId": "jupiter-planet",
+    "timestamp": "2025-01-13T13:55:00.000Z",
+    "quantity": 6,
+    "unitPrice": 650.00,
+    "totalAmount": 3900.00
+  },
+  {
+    "productId": "wild-lion",
+    "timestamp": "2025-01-13T09:30:00.000Z",
+    "quantity": 20,
+    "unitPrice": 450.00,
+    "totalAmount": 9000.00
+  },
+  {
+    "productId": "guadalupe-suncup",
+    "timestamp": "2025-01-12T15:10:00.000Z",
+    "quantity": 18,
+    "unitPrice": 555.93,
+    "totalAmount": 10006.74
+  },
+  {
+    "productId": "galaxy-cluster",
+    "timestamp": "2025-01-12T11:25:00.000Z",
+    "quantity": 4,
+    "unitPrice": 850.00,
+    "totalAmount": 3400.00
   }
 ]

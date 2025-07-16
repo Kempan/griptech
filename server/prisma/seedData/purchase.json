@@ -1,9 +1,58 @@
 [
   {
     "productId": "rocky-mountain-zinnia",
-    "timestamp": "2007-09-28T13:56:51Z",
-    "quantity": 875,
-    "unitCost": 4163.31,
-    "totalCost": 7871.43
+    "timestamp": "2025-01-15T08:30:00.000Z",
+    "quantity": 100,
+    "unitCost": 150.00,
+    "totalCost": 15000.00
+  },
+  {
+    "productId": "pinkscale-blazing-star",
+    "timestamp": "2025-01-14T14:20:00.000Z",
+    "quantity": 75,
+    "unitCost": 200.00,
+    "totalCost": 15000.00
+  },
+  {
+    "productId": "gila-milkvetch",
+    "timestamp": "2025-01-13T11:45:00.000Z",
+    "quantity": 50,
+    "unitCost": 350.00,
+    "totalCost": 17500.00
+  },
+  {
+    "productId": "cosmic-nebula",
+    "timestamp": "2025-01-12T16:15:00.000Z",
+    "quantity": 60,
+    "unitCost": 300.00,
+    "totalCost": 18000.00
+  },
+  {
+    "productId": "jupiter-planet",
+    "timestamp": "2025-01-11T09:30:00.000Z",
+    "quantity": 40,
+    "unitCost": 250.00,
+    "totalCost": 10000.00
+  },
+  {
+    "productId": "wild-lion",
+    "timestamp": "2025-01-10T13:20:00.000Z",
+    "quantity": 80,
+    "unitCost": 180.00,
+    "totalCost": 14400.00
+  },
+  {
+    "productId": "guadalupe-suncup",
+    "timestamp": "2025-01-09T10:45:00.000Z",
+    "quantity": 90,
+    "unitCost": 220.00,
+    "totalCost": 19800.00
+  },
+  {
+    "productId": "galaxy-cluster",
+    "timestamp": "2025-01-08T15:10:00.000Z",
+    "quantity": 30,
+    "unitCost": 400.00,
+    "totalCost": 12000.00
   }
 ]

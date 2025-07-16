@@ -1,7 +1,27 @@
 [
   {
-    "totalValue": 4754106.83,
-    "changePercentage": 61.51,
-    "date": "2023-03-18T22:32:25Z"
+    "totalValue": 475410.83,
+    "changePercentage": 15.25,
+    "date": "2025-01-15T23:59:59.000Z"
+  },
+  {
+    "totalValue": 412345.67,
+    "changePercentage": -8.45,
+    "date": "2025-01-14T23:59:59.000Z"
+  },
+  {
+    "totalValue": 450678.90,
+    "changePercentage": 12.30,
+    "date": "2025-01-13T23:59:59.000Z"
+  },
+  {
+    "totalValue": 401234.56,
+    "changePercentage": -5.20,
+    "date": "2025-01-12T23:59:59.000Z"
+  },
+  {
+    "totalValue": 423456.78,
+    "changePercentage": 8.75,
+    "date": "2025-01-11T23:59:59.000Z"
   }
 ]
