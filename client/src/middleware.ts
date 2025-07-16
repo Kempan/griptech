@@ -35,12 +35,15 @@ export default async function middleware(req: NextRequest) {
 	console.log(`🔵 Middleware: ${req.method} ${path}`);
 	console.log(`🔵 Is admin route: ${isAdminRoute}`);
 	console.log(`🔵 Has auth token: ${hasAuthToken}`);
+	console.log(`🔵 Auth token length: ${authToken?.length || 0}`);
 	console.log(`🔵 Origin: ${req.headers.get('origin')}`);
+	console.log(`🔵 All cookies: ${req.cookies.getAll().map(c => c.name).join(', ')}`);
 
-	// For admin routes, check if user has token
-	// The actual role validation happens server-side
+	// For admin routes, we'll let the client-side components handle auth
+	// The middleware will only redirect if there's absolutely no auth token
+	// This allows for better UX when auth state is being loaded
 	if (isAdminRoute && !hasAuthToken) {
-		console.log(`🔴 Redirecting to login: ${path}`);
+		console.log(`🔴 No auth token found, redirecting to login: ${path}`);
 		return NextResponse.redirect(new URL(`/${locale}/login?returnUrl=${normalizedPath}`, req.nextUrl));
 	}
 
