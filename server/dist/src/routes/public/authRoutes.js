@@ -6,4 +6,5 @@ const router = (0, express_1.Router)();
 router.get("/session", authController_1.getSession);
 router.post("/login", authController_1.loginUser);
 router.post("/logout", authController_1.logoutUser);
+router.post("/refresh", authController_1.refreshToken);
 exports.default = router;

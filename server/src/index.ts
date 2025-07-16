@@ -1,5 +1,5 @@
 // server/src/index.ts
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -33,8 +33,12 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// Enhanced CORS configuration for cross-domain authentication
 const allowedOrigins = [
 	"https://main.d3rzdlhtikzd4k.amplifyapp.com",
+	"https://griptech.se", // Add your main domain
+	"https://www.griptech.se", // Add www subdomain
 	"http://localhost:3000",
 	"https://localhost:3000",
 ];
@@ -42,12 +46,31 @@ const allowedOrigins = [
 app.use(
 	cors({
 		credentials: true,
-		origin: allowedOrigins,
+		origin: function (origin, callback) {
+			// Allow requests with no origin (like mobile apps or curl requests)
+			if (!origin) return callback(null, true);
+			
+			if (allowedOrigins.indexOf(origin) !== -1) {
+				callback(null, true);
+			} else {
+				console.log("CORS blocked origin:", origin);
+				callback(new Error("Not allowed by CORS"));
+			}
+		},
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+		allowedHeaders: [
+			"Content-Type", 
+			"Authorization", 
+			"Cookie", 
+			"X-Requested-With",
+			"X-CSRF-Token"
+		],
 		exposedHeaders: ["Set-Cookie"],
+		preflightContinue: false,
+		optionsSuccessStatus: 204,
 	})
 );
+
 app.use(cookieParser());
 
 /* ADMIN ROUTES */
@@ -71,4 +94,5 @@ app.use("/bundles", bundleRoutes);
 const port = Number(process.env.PORT) || 3001;
 app.listen(port, "0.0.0.0", () => {
 	console.log(`Server running on port ${port}`);
+	console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
 });

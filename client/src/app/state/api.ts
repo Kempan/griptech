@@ -13,6 +13,9 @@ import {
 	PurchaseSummary,
 	ExpenseSummary,
 	AuthStatus,
+	Order,
+	OrderStatus,
+	Expense,
 } from "@/app/types";
 
 // Interface for dashboard metrics response
@@ -30,11 +33,125 @@ export interface AdminProductsResponse {
 	totalCount: number;
 }
 
+// Bundle related types
+export interface BundleItem {
+	productId: number;
+	quantity: number;
+	order: number;
+	product?: {
+		id: number;
+		name: string;
+		slug: string;
+		price: number;
+		stockQuantity?: number;
+		categories?: Array<{
+			id: number;
+			name: string;
+			slug: string;
+		}>;
+	};
+}
+
+export interface ProductBundle {
+	id: number;
+	userId: number;
+	name: string;
+	description?: string | null;
+	items: BundleItem[];
+	isActive: boolean;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface BundlesResponse {
+	bundles: ProductBundle[];
+	totalCount: number;
+	pageCount: number;
+	currentPage: number;
+}
+
+// Favorite related types
+export interface Favorite {
+	id: number;
+	productId: number;
+	userId: number;
+	createdAt: Date;
+	product?: {
+		id: number;
+		name: string;
+		slug: string;
+		price: number;
+		stockQuantity?: number;
+		enableStockManagement?: boolean;
+		categories?: Array<{
+			id: number;
+			name: string;
+			slug: string;
+		}>;
+	};
+}
+
+export interface FavoritesResponse {
+	favorites: Favorite[];
+	totalCount: number;
+	pageCount: number;
+	currentPage: number;
+}
+
+// User profile update type
+export interface UpdateUserProfileData {
+	name?: string;
+	email?: string;
+	phone?: string;
+	shippingAddress?: any;
+	billingAddress?: any;
+	currentPassword?: string;
+	newPassword?: string;
+}
+
+// Custom base query with automatic token refresh
+const baseQuery = fetchBaseQuery({
+	baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+	credentials: "include",
+	prepareHeaders: (headers, { getState }) => {
+		// Add any additional headers if needed
+		return headers;
+	},
+});
+
+// Enhanced base query with automatic token refresh
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+	let result = await baseQuery(args, api, extraOptions);
+
+	// If the initial request fails with 401, try to refresh the token
+	if (result.error && result.error.status === 401) {
+		// Try to refresh the token
+		const refreshResult = await baseQuery(
+			{
+				url: "/api/refresh",
+				method: "POST",
+				credentials: "include",
+			},
+			api,
+			extraOptions
+		);
+
+		if (refreshResult.data) {
+			// Token refreshed successfully, retry the original request
+			result = await baseQuery(args, api, extraOptions);
+		} else {
+			// Refresh failed, redirect to login
+			if (typeof window !== "undefined") {
+				window.location.href = "/login";
+			}
+		}
+	}
+
+	return result;
+};
+
 export const api = createApi({
-	baseQuery: fetchBaseQuery({
-		baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-		credentials: "include",
-	}),
+	baseQuery: baseQueryWithReauth,
 	reducerPath: "api",
 	tagTypes: [
 		"DashboardMetrics",
@@ -111,7 +228,7 @@ export const api = createApi({
 			invalidatesTags: ["Products"],
 		}),
 
-		updateProduct: build.mutation<{ message: string }, UpdateProductPayload>({
+		updateProduct: build.mutation<Product, { id: number; data: Partial<NewProduct> }>({
 			query: ({ id, data }) => ({
 				url: `/admin/products/${id}`,
 				method: "PUT",
@@ -266,6 +383,27 @@ export const api = createApi({
 			}),
 			invalidatesTags: ["Auth"],
 		}),
+
+		// Refresh token endpoint
+		refreshToken: build.mutation<
+			{
+				message: string;
+				user: {
+					id: number;
+					name: string;
+					email: string;
+					roles: string[];
+				};
+			},
+			void
+		>({
+			query: () => ({
+				url: "/api/refresh",
+				method: "POST",
+				credentials: "include",
+			}),
+			invalidatesTags: ["Auth"],
+		}),
 	}),
 });
 
@@ -305,4 +443,7 @@ export const {
 	useGetAuthStatusQuery,
 	useLoginUserMutation,
 	useLogoutUserMutation,
+
+	// Refresh token
+	useRefreshTokenMutation,
 } = api;
