@@ -130,10 +130,7 @@ function seedData(fileNames, dataDirectory) {
                     }
                     // Convert `productId` from slug to integer in sales and purchases
                     if (modelName === "sale" || modelName === "purchase") {
-                        if (typeof data.productId === "string") {
-                            data.productId = yield getProductIdBySlug(data.productId);
-                        }
-                        // If productId is already a number, keep it as is
+                        data.productId = yield getProductIdBySlug(data.productId);
                     }
                     // Convert `expenseSummaryId` from date to integer in `expenseByCategory`
                     if (modelName === "expenseByCategory") {
