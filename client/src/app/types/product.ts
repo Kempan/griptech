@@ -9,6 +9,13 @@ export interface NewProduct {
 	price: number;
 	stockQuantity: number;
 	rating?: number;
+	enableStockManagement: boolean;
+	description?: string;
+	shortDescription?: string;
+	metaTitle?: string;
+	metaDescription?: string;
+	metaKeywords?: string;
+	categoryIds: number[];
 }
 
 /**
