@@ -88,7 +88,7 @@ export const createColumns = (
 			}
 			
 			const stockClass = getStockStatusColor(product);
-			const displayText = getStockDisplayText(product);
+			const displayText = getStockDisplayText(product, t);
 			
 			return (
 				<div className="flex items-center gap-2">

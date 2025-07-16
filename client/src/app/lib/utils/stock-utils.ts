@@ -41,20 +41,20 @@ export function getMaxQuantity(product: Product, defaultMax: number = 10): numbe
 /**
  * Get stock status text
  */
-export function getStockStatusText(product: Product): string {
+export function getStockStatusText(product: Product, t: (key: string) => string): string {
 	if (!product.enableStockManagement) {
-		return "In Stock";
+		return t("InStock");
 	}
 	
 	if (product.stockQuantity <= 0) {
-		return "Out of Stock";
+		return t("OutOfStock");
 	}
 	
 	if (product.stockQuantity <= 5) {
-		return "Low Stock";
+		return t("LowStock");
 	}
 	
-	return "In Stock";
+	return t("InStock");
 }
 
 /**
@@ -79,14 +79,14 @@ export function getStockStatusColor(product: Product): string {
 /**
  * Get stock display text for UI
  */
-export function getStockDisplayText(product: Product): string {
+export function getStockDisplayText(product: Product, t: (key: string) => string): string {
 	if (!product.enableStockManagement) {
-		return "Stock management disabled";
+		return t("StockManagementDisabled");
 	}
 	
 	if (product.stockQuantity <= 0) {
-		return "Out of Stock";
+		return t("OutOfStock");
 	}
 	
-	return `${product.stockQuantity} in stock`;
+	return `${product.stockQuantity} ${t("InStock")}`;
 } 

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 
-const publicRoutes = ["/login", "/register", "/", "/products", "/contact"];
+const publicRoutes = ["/login", "/register", "/", "/products", "/contact", "/test-auth"];
 
 const intlMiddleware = createMiddleware({
 	...routing,
@@ -31,17 +31,35 @@ export default async function middleware(req: NextRequest) {
 	const authToken = req.cookies.get("auth-token")?.value;
 	const hasAuthToken = !!authToken;
 
+	// Debug logging
+	console.log(`🔵 Middleware: ${req.method} ${path}`);
+	console.log(`🔵 Is admin route: ${isAdminRoute}`);
+	console.log(`🔵 Has auth token: ${hasAuthToken}`);
+	console.log(`🔵 Origin: ${req.headers.get('origin')}`);
+
 	// For admin routes, check if user has token
 	// The actual role validation happens server-side
 	if (isAdminRoute && !hasAuthToken) {
-		return NextResponse.redirect(new URL(`/${locale}/login`, req.nextUrl));
+		console.log(`🔴 Redirecting to login: ${path}`);
+		return NextResponse.redirect(new URL(`/${locale}/login?returnUrl=${normalizedPath}`, req.nextUrl));
 	}
 
-	// Redirect logged-in users away from login page
-	if (path.includes("/login") && hasAuthToken) {
-		// We can't check roles here, so redirect to home
-		// The home page can then redirect admins to /admin if needed
-		return NextResponse.redirect(new URL(`/${locale}/`, req.nextUrl));
+	// Redirect logged-in users away from login/register pages
+	if ((path.includes("/login") || path.includes("/register")) && hasAuthToken) {
+		console.log(`🟢 Redirecting logged-in user from auth page: ${path}`);
+		
+		// Check if there's a returnUrl parameter
+		const url = new URL(req.url);
+		const returnUrl = url.searchParams.get('returnUrl');
+		
+		if (returnUrl && returnUrl.startsWith('/admin')) {
+			// Redirect to the admin page they were trying to access
+			console.log(`🟢 Redirecting to admin returnUrl: ${returnUrl}`);
+			return NextResponse.redirect(new URL(`/${locale}${returnUrl}`, req.nextUrl));
+		} else {
+			// Default redirect to home page
+			return NextResponse.redirect(new URL(`/${locale}/`, req.nextUrl));
+		}
 	}
 
 	return intlResponse;

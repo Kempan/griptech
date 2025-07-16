@@ -182,7 +182,6 @@
   "ClearCart": "Töm kundvagn",
   "RemoveFromCart": "Ta bort från kundvagn",
   "AreYouSureRemoveFromCart": "Är du säker på att du vill ta bort",
-  "Remove": "Ta bort",
   "Total": "Totalt",
   "ShoppingCart": "Kundvagn",
   "OrderSummary": "Ordersammanfattning",
@@ -429,7 +428,7 @@
   "saveChanges": "Spara ändringar",
   "cancel": "Avbryt",
   "general": "Allmänt",
-  "description": "Beskrivning",
+  "description": "Beskrivning", 
   "categories": "Kategorier",
   "seoMetadata": "SEO Metadata",
   "shortDescription": "Kort beskrivning",
@@ -648,5 +647,11 @@
   "Selected": "Valda",
   "BundleDeletedSuccessfully": "Paketet har tagits bort",
   "BundleCreatedSuccessfully": "Paketet har skapats",
-  "FailedToCreateBundle": "Misslyckades med att skapa paket"
+  "FailedToCreateBundle": "Misslyckades med att skapa paket",
+  "enableStockManagement": "Aktivera lagerhantering",
+  "disabled": "Inaktiverad",
+  "enabled": "Aktiverad",
+  "StockManagementDisabled": "Lagerhantering inaktiverad",  
+  "LowStock": "Låg lager",
+  "StockManagement": "Lagerhantering"
 }

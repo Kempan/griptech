@@ -182,7 +182,6 @@
   "ClearCart": "Empty cart",
   "RemoveFromCart": "Remove from cart",
   "AreYouSureRemoveFromCart": "Are you sure you want to remove",
-  "Remove": "Remove",
   "Total": "Total",
   "ShoppingCart": "Shopping Cart",
   "OrderSummary": "Order Summary",
@@ -645,5 +644,11 @@
   "Selected": "Selected",
   "BundleDeletedSuccessfully": "Bundle deleted successfully",
   "BundleCreatedSuccessfully": "Bundle created successfully",
-  "FailedToCreateBundle": "Failed to create bundle"
+  "FailedToCreateBundle": "Failed to create bundle",
+  "enableStockManagement": "Enable Stock Management",
+  "disabled": "Disabled",
+  "enabled": "Enabled",
+  "StockManagementDisabled": "Stock management disabled",
+  "LowStock": "Low Stock",
+  "StockManagement": "Stock Management"
 }

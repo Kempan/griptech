@@ -11,7 +11,7 @@ import { Input } from "@/shadcn/components/ui/input";
 import { Label } from "@/shadcn/components/ui/label";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
-import { useRouter } from "next/navigation"; // Add this import
+import { useRouter, useSearchParams } from "next/navigation";
 
 // 🔹 Define Zod schema for validation
 const loginSchema = z.object({
@@ -24,7 +24,8 @@ export default function LoginForm({
 	...props
 }: React.ComponentProps<"div">) {
 	const t = useTranslations();
-	const router = useRouter(); // Add this hook
+	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [login, { isLoading }] = useLoginUserMutation();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -55,12 +56,24 @@ export default function LoginForm({
 		try {
 			const response = await login({ email, password }).unwrap();
 			console.log("Login successful:", response);
-			// Check if user has admin role and redirect accordingly
-			if (response.user && response.user.roles.includes("admin")) {
-				router.push("/admin"); // Redirect to admin panel
-			} else {
-				router.push("/"); // Redirect to home page
+			
+			// Get returnUrl from search params
+			const returnUrl = searchParams.get('returnUrl');
+			
+			// Determine redirect destination
+			let redirectPath = "/";
+			
+			if (returnUrl) {
+				// If there's a returnUrl, use it (but validate it's safe)
+				if (returnUrl.startsWith('/') && !returnUrl.includes('..')) {
+					redirectPath = returnUrl;
+				}
+			} else if (response.user && response.user.roles.includes("admin")) {
+				// If no returnUrl, redirect admins to admin panel
+				redirectPath = "/admin";
 			}
+			
+			router.push(redirectPath);
 		} catch (err) {
 			console.error("Login error:", err);
 			if (

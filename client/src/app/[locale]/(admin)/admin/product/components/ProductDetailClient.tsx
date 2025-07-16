@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { formatDateDisplay } from "@/app/lib/utils/formatDate";
 import { useTranslations } from "next-intl";
 import { getStockStatusText, getStockStatusColor } from "@/app/lib/utils/stock-utils";
+import { formatCurrency } from "@/app/lib/utils/formatCurrency";
 
 interface ProductDetailClientProps {
 	product: Product;
@@ -258,12 +259,12 @@ export function ProductDetailClient({
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Name</p>
+						<p className="text-sm text-gray-500">{t("name")}</p>
 						<p className="font-medium">{product.name}</p>
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Slug</p>
+							<p className="text-sm text-gray-500">{t("slug")}</p>
 						<p
 							className="font-medium text-gray-800 truncate"
 							title={product.slug || "-"}
@@ -273,26 +274,26 @@ export function ProductDetailClient({
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Price</p>
-						<p className="font-medium">${product.price}</p>
+						<p className="text-sm text-gray-500">{t("price")}</p>		
+						<p className="font-medium">{formatCurrency(product.price, "SEK")}</p>
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Stock Management</p>
+						<p className="text-sm text-gray-500">{t("StockManagement")}</p>
 						<p className="font-medium">
-							{product.enableStockManagement ? "Enabled" : "Disabled"}
+							{product.enableStockManagement ? t("enabled") : t("disabled")}
 						</p>
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Stock</p>
+						<p className="text-sm text-gray-500">{t("stock")}</p>
 						<p className="font-medium">{product.stockQuantity || 0}</p>
 					</div>
 
 					<div>
-						<p className="text-sm text-gray-500">Status</p>
+							<p className="text-sm text-gray-500">{t("status")}</p>
 						<p className={`font-medium ${getStockStatusColor(product)}`}>
-							{getStockStatusText(product)}
+							{getStockStatusText(product, t)}
 						</p>
 					</div>
 				</div>
@@ -544,7 +545,7 @@ export function ProductDetailClient({
 											htmlFor="enableStockManagement"
 											className="text-sm font-medium cursor-pointer"
 										>
-											Enable Stock Management
+											{t("enableStockManagement")}
 										</Label>
 									</div>
 									

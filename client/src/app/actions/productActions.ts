@@ -1,13 +1,26 @@
 "use server";
 
 import { Product } from "@/app/types";
+import { cookies } from "next/headers";
 
 export async function getProducts({ limit = 999 }: { limit?: number } = {}) {
 	try {
+		const cookieStore = await cookies();
+		const authToken = cookieStore.get("auth-token")?.value;
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+
+		if (authToken) {
+			headers.Authorization = `Bearer ${authToken}`;
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?limit=${limit}`,
 			{
 				cache: "no-cache",
+				headers,
 			}
 		);
 		if (!res.ok) {
@@ -23,10 +36,22 @@ export async function getProducts({ limit = 999 }: { limit?: number } = {}) {
 
 export async function getProductById(id: number) {
 	try {
+		const cookieStore = await cookies();
+		const authToken = cookieStore.get("auth-token")?.value;
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+
+		if (authToken) {
+			headers.Authorization = `Bearer ${authToken}`;
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${id}`,
 			{
 				cache: "no-cache",
+				headers,
 			}
 		);
 		if (!res.ok) {
@@ -42,10 +67,22 @@ export async function getProductById(id: number) {
 
 export async function getProductBySlug(slug: string) {
 	try {
+		const cookieStore = await cookies();
+		const authToken = cookieStore.get("auth-token")?.value;
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+
+		if (authToken) {
+			headers.Authorization = `Bearer ${authToken}`;
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/by-slug/${slug}`,
 			{
 				cache: "no-cache",
+				headers,
 			}
 		);
 		if (!res.ok) {
@@ -63,10 +100,22 @@ export async function getProductsByCategorySlug(
 	slug: string
 ): Promise<Product[] | null> {
 	try {
+		const cookieStore = await cookies();
+		const authToken = cookieStore.get("auth-token")?.value;
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+
+		if (authToken) {
+			headers.Authorization = `Bearer ${authToken}`;
+		}
+
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/by-category/${slug}`,
 			{
 				cache: "no-store",
+				headers,
 			}
 		);
 
