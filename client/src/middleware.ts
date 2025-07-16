@@ -39,6 +39,7 @@ export default async function middleware(req: NextRequest) {
 	console.log(`🔵 Origin: ${req.headers.get('origin')}`);
 	console.log(`🔵 All cookies: ${req.cookies.getAll().map(c => c.name).join(', ')}`);
 
+	// TEMPORARILY DISABLED FOR DEBUGGING
 	// For admin routes, we'll let the client-side components handle auth
 	// The middleware will only redirect if there's absolutely no auth token
 	// This allows for better UX when auth state is being loaded
@@ -47,7 +48,13 @@ export default async function middleware(req: NextRequest) {
 		console.log(`🔴 Normalized path: ${normalizedPath}`);
 		console.log(`🔴 Locale: ${locale}`);
 		console.log(`🔴 Redirect URL: /${locale}/login?returnUrl=${normalizedPath}`);
-		return NextResponse.redirect(new URL(`/${locale}/login?returnUrl=${normalizedPath}`, req.nextUrl));
+		console.log(`🔴 COOKIES DEBUG:`, {
+			allCookies: req.cookies.getAll().map(c => ({ name: c.name, value: c.value.substring(0, 20) + '...' })),
+			authToken: authToken ? 'Present' : 'Missing',
+			authTokenLength: authToken?.length || 0
+		});
+		// return NextResponse.redirect(new URL(`/${locale}/login?returnUrl=${normalizedPath}`, req.nextUrl));
+		console.log(`🔴 REDIRECT DISABLED FOR DEBUGGING`);
 	}
 
 	// Redirect logged-in users away from login/register pages
