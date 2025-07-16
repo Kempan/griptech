@@ -15,11 +15,17 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 	);
 
 	useEffect(() => {
+		console.log("🔵 Admin Layout Debug:", { isLoggedIn, isAdmin, isLoading });
+		
 		if (!isLoading) {
 			if (!isLoggedIn) {
+				console.log("🔴 Redirecting to login - not logged in");
 				router.push("/login");
 			} else if (!isAdmin) {
+				console.log("🔴 Redirecting to home - not admin");
 				router.push("/");
+			} else {
+				console.log("🟢 Admin access granted");
 			}
 		}
 	}, [isLoggedIn, isAdmin, isLoading, router]);
