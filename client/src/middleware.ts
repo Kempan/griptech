@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 
-const publicRoutes = ["/login", "/register", "/", "/products", "/contact", "/test-auth", "/test-admin"];
+const publicRoutes = ["/login", "/register", "/", "/products", "/contact", "/test-auth", "/test-admin", "/admin-test"];
 
 const intlMiddleware = createMiddleware({
 	...routing,
@@ -44,6 +44,9 @@ export default async function middleware(req: NextRequest) {
 	// This allows for better UX when auth state is being loaded
 	if (isAdminRoute && !hasAuthToken) {
 		console.log(`🔴 No auth token found, redirecting to login: ${path}`);
+		console.log(`🔴 Normalized path: ${normalizedPath}`);
+		console.log(`🔴 Locale: ${locale}`);
+		console.log(`🔴 Redirect URL: /${locale}/login?returnUrl=${normalizedPath}`);
 		return NextResponse.redirect(new URL(`/${locale}/login?returnUrl=${normalizedPath}`, req.nextUrl));
 	}
 
@@ -71,7 +74,5 @@ export default async function middleware(req: NextRequest) {
 export const config = {
 	matcher: [
 		"/((?!api|_next|.*\\..*).*)",
-		"/admin/:path*",
-		"/:locale/admin/:path*",
 	],
 };
