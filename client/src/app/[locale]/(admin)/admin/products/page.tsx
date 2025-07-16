@@ -29,6 +29,8 @@ export default async function AdminProductsPage({
 		sortBy,
 	});
 
+	console.log("🔵 Products:", products);
+
 	return (
 		<div className="mx-auto pb-4 w-full">
 			<ServerHeader text={t("products")} />

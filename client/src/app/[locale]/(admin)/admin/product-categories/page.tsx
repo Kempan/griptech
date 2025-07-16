@@ -65,6 +65,8 @@ export default async function Categories({
 	// Fetch all categories
 	const categories = await getCategories();
 
+	console.log("🔵 Categories:", categories);
+
 	// Flatten categories for display
 	const flattenedCategories = flattenCategories(categories);
 
