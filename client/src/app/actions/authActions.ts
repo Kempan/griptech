@@ -29,6 +29,7 @@ export async function getAuthStatus(): Promise<AuthStatus> {
 		);
 
 		if (!response.ok) {
+			console.error("Auth session check failed:", response.status, response.statusText);
 			return { isLoggedIn: false };
 		}
 

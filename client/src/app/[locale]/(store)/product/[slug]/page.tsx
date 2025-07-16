@@ -1,6 +1,7 @@
 // src/app/[locale]/(store)/product/[slug]/page.tsx
 import { Suspense } from "react";
 import { Metadata, ResolvingMetadata } from "next";
+import { notFound } from "next/navigation";
 import {
 	getProductBySlug,
 	getProductsByCategorySlug,
@@ -23,40 +24,53 @@ export async function generateMetadata(
 	},
 	parent: ResolvingMetadata
 ): Promise<Metadata> {
+	try {
+		const { slug } = await params;
+		const product = await getProductBySlug(slug);
 
-	const { slug } = await params;
+		if (!product) {
+			return {
+				title: "Product Not Found | Griptech",
+				description: "The requested product could not be found.",
+			};
+		}
 
-	const product = await getProductBySlug(slug);
+		// Get base URL for canonical link from parent metadata
+		const previousImages = (await parent).openGraph?.images || [];
 
-	// Get base URL for canonical link from parent metadata
-	const previousImages = (await parent).openGraph?.images || [];
+		// Use SEO metadata fields if available, otherwise fall back to defaults
+		const title = product.metaTitle || `${product.name} | Griptech`;
+		const description =
+			product.metaDescription ||
+			product.shortDescription ||
+			`Shop ${product.name} from our premium collection. Available in multiple sizes and high-quality materials.`;
+		const keywords =
+			product.metaKeywords ||
+			`poster, print, ${product.name}, home decor, wall art`;
 
-	// Use SEO metadata fields if available, otherwise fall back to defaults
-	const title = product.metaTitle || `${product.name} | Griptech`;
-	const description =
-		product.metaDescription ||
-		product.shortDescription ||
-		`Shop ${product.name} from our premium collection. Available in multiple sizes and high-quality materials.`;
-	const keywords =
-		product.metaKeywords ||
-		`poster, print, ${product.name}, home decor, wall art`;
-
-	return {
-		title,
-		description,
-		keywords,
-		openGraph: {
-			images: [
-				`${process.env.NEXT_PUBLIC_AWS_BUCKET_PREFIX}/product-2.jpeg`,
-				...previousImages,
-			],
-			title: product.metaTitle || product.name,
-			description:
-				product.metaDescription ||
-				product.shortDescription ||
-				`High-quality ${product.name} print. Available in multiple sizes.`,
-		},
-	};
+		return {
+			title,
+			description,
+			keywords,
+			openGraph: {
+				images: [
+					`${process.env.NEXT_PUBLIC_AWS_BUCKET_PREFIX}/product-2.jpeg`,
+					...previousImages,
+				],
+				title: product.metaTitle || product.name,
+				description:
+					product.metaDescription ||
+					product.shortDescription ||
+					`High-quality ${product.name} print. Available in multiple sizes.`,
+			},
+		};
+	} catch (error) {
+		console.error("Error generating metadata:", error);
+		return {
+			title: "Product | Griptech",
+			description: "Product details",
+		};
+	}
 }
 
 export default async function ProductPage({
@@ -64,50 +78,60 @@ export default async function ProductPage({
 }: {
 	params: Promise<{ slug: string }>;
 }) {
-	const { slug } = await params;
+	try {
+		const { slug } = await params;
 
-	// ✅ Await directly instead of using `use()`
-	const product = await getProductBySlug(slug);
+		// Fetch product data
+		const product = await getProductBySlug(slug);
 
-	const categoryIds =
-		product.categories?.map((cat: { slug: string }) => cat.slug) ?? [];
+		// If product not found, show 404
+		if (!product) {
+			notFound();
+		}
 
-	const relatedProductsPromise =
-		categoryIds.length > 0
-			? getProductsByCategorySlug(categoryIds[0])
-			: Promise.resolve([]);
+		const categoryIds =
+			product.categories?.map((cat: { slug: string }) => cat.slug) ?? [];
 
-	const productImages = [
-		`/images/grip3.jpg`,
-		`/images/grip2.webp`,
-	];
+		const relatedProductsPromise =
+			categoryIds.length > 0
+				? getProductsByCategorySlug(categoryIds[0])
+				: Promise.resolve([]);
 
-	return (
-		<SectionWrapper className="pt-6">
-			<InnerWrapper>
-				<div className="flex flex-col items-start gap-6 md:flex-row">
-					{/* ⛔ DO NOT wrap client components in Suspense */}
-					<ProductImageGallery
-						productName={product.name}
-						productImages={productImages}
-					/>
+		const productImages = [
+			`/images/grip3.jpg`,
+			`/images/grip2.webp`,
+		];
 
-					<Suspense fallback={<ProductDetailsSkeleton />}>
-						<ProductDetails product={product} />
+		return (
+			<SectionWrapper className="pt-6">
+				<InnerWrapper>
+					<div className="flex flex-col items-start gap-6 md:flex-row">
+						{/* ⛔ DO NOT wrap client components in Suspense */}
+						<ProductImageGallery
+							productName={product.name}
+							productImages={productImages}
+						/>
+
+						<Suspense fallback={<ProductDetailsSkeleton />}>
+							<ProductDetails product={product} />
+						</Suspense>
+					</div>
+
+					<Suspense
+						fallback={
+							<div className="mt-12 h-72 animate-pulse bg-gray-100 rounded-lg" />
+						}
+					>
+						<RelatedProducts
+							categorySlug={categoryIds[0]}
+							currentProductId={product.id}
+						/>
 					</Suspense>
-				</div>
-
-				<Suspense
-					fallback={
-						<div className="mt-12 h-72 animate-pulse bg-gray-100 rounded-lg" />
-					}
-				>
-					<RelatedProducts
-						categorySlug={categoryIds[0]}
-						currentProductId={product.id}
-					/>
-				</Suspense>
-			</InnerWrapper>
-		</SectionWrapper>
-	);
+				</InnerWrapper>
+			</SectionWrapper>
+		);
+	} catch (error) {
+		console.error("Error in ProductPage:", error);
+		notFound();
+	}
 }
