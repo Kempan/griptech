@@ -7,50 +7,85 @@ exports.getClearRefreshCookieSettings = exports.getRefreshCookieSettings = expor
 // server/src/lib/jwt.ts
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const signJWT = (payload) => {
-    return jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN || '24h', // Reduced to 24 hours for better security
+    const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '15m', // 15 minutes for access token
     });
+    console.log("🔵 JWT token generated for user:", payload.userId);
+    console.log("🔵 JWT expires in:", process.env.JWT_EXPIRES_IN || '15m');
+    return token;
 };
 exports.signJWT = signJWT;
 const verifyJWT = (token) => {
-    return jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+    const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+    console.log("🔵 JWT token verified for user:", decoded.userId);
+    return decoded;
 };
 exports.verifyJWT = verifyJWT;
 const getCookieSettings = () => {
-    const isProduction = process.env.NODE_ENV === "production";
-    // Get domain from environment or use default
-    const cookieDomain = process.env.COOKIE_DOMAIN;
-    return Object.assign({ httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax", maxAge: 24 * 60 * 60 * 1000, path: "/" }, (cookieDomain && { domain: cookieDomain }));
+    const settings = {
+        httpOnly: true,
+        secure: true, // Always secure for cross-domain
+        sameSite: "none", // Allow cross-domain
+        maxAge: 15 * 60 * 1000, // 15 minutes
+        path: "/",
+        // Don't set domain for cross-domain cookies
+    };
+    console.log("🔵 Access token cookie settings:", settings);
+    return settings;
 };
 exports.getCookieSettings = getCookieSettings;
 // Settings for clearing cookies (without maxAge to avoid Express deprecation warning)
 const getClearCookieSettings = () => {
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = process.env.COOKIE_DOMAIN;
-    return Object.assign({ httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax", path: "/" }, (cookieDomain && { domain: cookieDomain }));
+    const settings = {
+        httpOnly: true,
+        secure: true, // Always secure for cross-domain
+        sameSite: "none", // Allow cross-domain
+        path: "/",
+        // Don't set domain for cross-domain cookies
+    };
+    console.log("🔵 Clear cookie settings:", settings);
+    return settings;
 };
 exports.getClearCookieSettings = getClearCookieSettings;
 // New function for refresh tokens
 const signRefreshToken = (payload) => {
-    return jsonwebtoken_1.default.sign(payload, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
+    const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
         expiresIn: '7d', // 7 days for refresh token
     });
+    console.log("🔵 Refresh token generated for user:", payload.userId);
+    console.log("🔵 Refresh token expires in: 7d");
+    return token;
 };
 exports.signRefreshToken = signRefreshToken;
 const verifyRefreshToken = (token) => {
-    return jsonwebtoken_1.default.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+    const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+    console.log("🔵 Refresh token verified for user:", decoded.userId);
+    return decoded;
 };
 exports.verifyRefreshToken = verifyRefreshToken;
 const getRefreshCookieSettings = () => {
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = process.env.COOKIE_DOMAIN;
-    return Object.assign({ httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax", maxAge: 7 * 24 * 60 * 60 * 1000, path: "/" }, (cookieDomain && { domain: cookieDomain }));
+    const settings = {
+        httpOnly: true,
+        secure: true, // Always secure for cross-domain
+        sameSite: "none", // Allow cross-domain
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        path: "/",
+        // Don't set domain for cross-domain cookies
+    };
+    console.log("🔵 Refresh token cookie settings:", settings);
+    return settings;
 };
 exports.getRefreshCookieSettings = getRefreshCookieSettings;
 // Settings for clearing refresh cookies (without maxAge)
 const getClearRefreshCookieSettings = () => {
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieDomain = process.env.COOKIE_DOMAIN;
-    return Object.assign({ httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax", path: "/" }, (cookieDomain && { domain: cookieDomain }));
+    const settings = {
+        httpOnly: true,
+        secure: true, // Always secure for cross-domain
+        sameSite: "none", // Allow cross-domain
+        path: "/",
+        // Don't set domain for cross-domain cookies
+    };
+    console.log("🔵 Clear refresh cookie settings:", settings);
+    return settings;
 };
 exports.getClearRefreshCookieSettings = getClearRefreshCookieSettings;

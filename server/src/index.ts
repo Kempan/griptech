@@ -43,17 +43,25 @@ const allowedOrigins = [
 	"https://localhost:3000",
 ];
 
+console.log("🔵 CORS allowed origins:", allowedOrigins);
+
 app.use(
 	cors({
 		credentials: true,
 		origin: function (origin, callback) {
+			console.log("🔵 CORS request from origin:", origin);
+			
 			// Allow requests with no origin (like mobile apps or curl requests)
-			if (!origin) return callback(null, true);
+			if (!origin) {
+				console.log("🟢 Allowing request with no origin");
+				return callback(null, true);
+			}
 			
 			if (allowedOrigins.indexOf(origin) !== -1) {
+				console.log("🟢 CORS allowed for origin:", origin);
 				callback(null, true);
 			} else {
-				console.log("CORS blocked origin:", origin);
+				console.log("🔴 CORS blocked origin:", origin);
 				callback(new Error("Not allowed by CORS"));
 			}
 		},
@@ -72,6 +80,12 @@ app.use(
 );
 
 app.use(cookieParser());
+
+// Add request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+	console.log(`🔵 ${req.method} ${req.path} - Origin: ${req.headers.origin} - Cookies: ${Object.keys(req.cookies || {}).length}`);
+	next();
+});
 
 /* ADMIN ROUTES */
 app.use("/admin/dashboard", adminDashboardRoutes);
@@ -93,6 +107,8 @@ app.use("/bundles", bundleRoutes);
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;
 app.listen(port, "0.0.0.0", () => {
-	console.log(`Server running on port ${port}`);
-	console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
+	console.log(`🟢 Server running on port ${port}`);
+	console.log(`🔵 CORS allowed origins: ${allowedOrigins.join(', ')}`);
+	console.log(`🔵 Environment: ${process.env.NODE_ENV || 'development'}`);
+	console.log(`🔵 JWT expires in: ${process.env.JWT_EXPIRES_IN || '15m'}`);
 });
